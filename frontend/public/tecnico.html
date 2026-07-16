@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Atlas — Painel do Técnico</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/estilos.css" />
+</head>
+<body class="tecnico-body">
+
+  <!-- LOGIN -->
+  <div id="tela-login" class="login-tela">
+    <form id="form-login" class="login-cartao" data-testid="login-form">
+      <div class="logo-linha">
+        <img src="https://customer-assets-cm19k8pv.emergentagent.net/job_665cddb2-e81a-4c4b-b2bd-95b9a8472f06/artifacts/6oabfk4u_logo-dark.webp" alt="Atlas" />
+      </div>
+      <h1>Painel do Técnico</h1>
+      <p class="sub">Suporte Técnico Remoto Atlas</p>
+      <label for="in-email">Email</label>
+      <input id="in-email" type="email" autocomplete="username" placeholder="nome@atlas.pt" data-testid="login-email" required />
+      <label for="in-pass">Palavra-passe</label>
+      <input id="in-pass" type="password" autocomplete="current-password" placeholder="••••••••" data-testid="login-password" required />
+      <button type="submit" class="botao-primario" data-testid="login-submit">Entrar</button>
+      <div class="msg-erro" id="login-erro" data-testid="login-erro"></div>
+    </form>
+  </div>
+
+  <!-- APP -->
+  <div id="tela-app" class="oculto">
+    <header class="barra">
+      <img src="https://customer-assets-cm19k8pv.emergentagent.net/job_665cddb2-e81a-4c4b-b2bd-95b9a8472f06/artifacts/6oabfk4u_logo-dark.webp" alt="Atlas" />
+      <div class="titulo">Atlas<small id="lbl-operador">operador</small></div>
+      <div class="abas">
+        <button class="aba ativa" data-aba="sessoes" data-testid="aba-sessoes">Sessões</button>
+        <button class="aba" data-aba="config" data-testid="aba-config">Configurações</button>
+      </div>
+      <div class="credito" data-testid="credito">✦ CRIADO POR: VICTOR SILVA &amp; PEDRO CABRAL</div>
+      <button class="sair" id="btn-sair" data-testid="btn-sair">Sair</button>
+    </header>
+
+    <main class="conteudo">
+      <!-- SESSÕES -->
+      <section id="painel-sessoes">
+        <div class="painel-link">
+          <span class="rot">O seu link para clientes</span>
+          <span class="url" id="link-cliente" data-testid="link-cliente"></span>
+          <button class="btn-copiar" id="btn-copiar" data-testid="btn-copiar">Copiar link</button>
+        </div>
+
+        <div class="seccao-titulo"><span class="ponto-online"></span> Online agora <span class="conta" id="conta-online">0</span></div>
+        <div class="grelha" id="grelha-online"></div>
+        <div class="vazio oculto" id="vazio-online" data-testid="vazio-online">Nenhum cliente online neste momento. Partilhe o seu link para começar.</div>
+
+        <div class="seccao-titulo" style="margin-top:34px"><span class="ponto-offline"></span> Histórico <span class="conta" id="conta-hist">0</span></div>
+        <div class="barra-acoes"><button class="btn-limpar" id="btn-limpar" data-testid="btn-limpar-tudo">Limpar tudo</button></div>
+        <div class="grelha" id="grelha-hist"></div>
+        <div class="vazio oculto" id="vazio-hist" data-testid="vazio-hist">Ainda não há acessos anteriores.</div>
+      </section>
+
+      <!-- CONFIG -->
+      <section id="painel-config" class="oculto">
+        <div class="config-cartao">
+          <h2>Alterar palavra-passe</h2>
+          <p class="sub">Só afeta a sua própria conta de operador.</p>
+          <form id="form-senha" data-testid="form-senha">
+            <label for="in-atual">Palavra-passe atual</label>
+            <input id="in-atual" type="password" autocomplete="current-password" data-testid="senha-atual" required />
+            <label for="in-nova">Nova palavra-passe</label>
+            <input id="in-nova" type="password" autocomplete="new-password" data-testid="senha-nova" required />
+            <button type="submit" class="botao-primario" data-testid="senha-submit">Guardar</button>
+            <div class="msg-ok" id="senha-msg" data-testid="senha-msg"></div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL VER ECRÃ -->
+  <div id="modal-ver" class="modal-fundo oculto" data-testid="modal-ver">
+    <div class="modal">
+      <div class="modal-cab">
+        <span class="t" id="modal-titulo">Ecrã do cliente</span>
+        <span class="dica">Clique no ecrã para orientar o cliente (círculo vermelho)</span>
+        <button class="fechar" id="btn-fechar-modal" data-testid="btn-fechar-modal">✕</button>
+      </div>
+      <div class="video-caixa">
+        <video id="video-ecra" autoplay playsinline muted data-testid="video-ecra"></video>
+        <div class="video-espera" id="video-espera">
+          <div class="spinner"></div>
+          <div id="espera-txt">À espera que o cliente partilhe o ecrã…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="/tecnico.js"></script>
+</body>
+</html>

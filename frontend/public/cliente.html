@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#e8f1e6" />
+  <title>Suporte Atlas — Ajuda em direto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/estilos.css" />
+</head>
+<body class="cliente-body">
+  <div class="c-topo">
+    <img src="https://customer-assets-cm19k8pv.emergentagent.net/job_665cddb2-e81a-4c4b-b2bd-95b9a8472f06/artifacts/6oabfk4u_logo-dark.webp" alt="Atlas" />
+    <div class="marca">Suporte Atlas<small>Estamos aqui para o ajudar</small></div>
+  </div>
+
+  <main class="c-centro">
+    <!-- Estado inicial -->
+    <section id="tela-inicio">
+      <div class="c-cartao">
+        <h1>Ajuda em direto,<br/>simples e segura</h1>
+        <p>O nosso técnico vai ajudá-lo a resolver o problema. Para isso, precisa de ver o seu ecrã enquanto o orienta.</p>
+        <button id="btn-comecar" class="botao-comecar" data-testid="cliente-comecar-btn">
+          <span>▶</span> COMEÇAR
+        </button>
+      </div>
+
+      <div class="aviso" data-testid="cliente-aviso">
+        <span>🔒</span>
+        <span><strong>Ao tocar em COMEÇAR, o seu ecrã será partilhado com o técnico.</strong> Verá sempre um aviso do seu telemóvel/computador a pedir autorização. Pode parar quando quiser.</span>
+      </div>
+
+      <details class="limitacoes" data-testid="cliente-limitacoes">
+        <summary>ℹ️ O que o técnico consegue (e não consegue) ver</summary>
+        <ul>
+          <li>Vê apenas o ecrã que <strong>você</strong> autorizar partilhar.</li>
+          <li><strong>Não</strong> consegue ver apps de bancos — o sistema protege-as e aparecem a preto.</li>
+          <li>Os toques que ele indica (círculo vermelho) só funcionam <strong>dentro desta página</strong>, nunca no resto do telemóvel.</li>
+          <li>No iPhone/iPad (Safari) a partilha de ecrã por web não é suportada.</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- Estado ativo -->
+    <section id="tela-ativo" class="estado-ativo oculto">
+      <div class="c-cartao">
+        <div class="pulso" data-testid="cliente-pulso">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <h2>Suporte ativo</h2>
+        <p>Está a partilhar o seu ecrã. O técnico já o consegue ajudar. Siga o <strong>círculo vermelho</strong> que aparecer.</p>
+        <button id="btn-parar" class="botao-secundario" data-testid="cliente-parar-btn">Parar partilha</button>
+      </div>
+    </section>
+
+    <!-- Estado erro -->
+    <section id="tela-erro" class="oculto">
+      <div class="c-erro" data-testid="cliente-erro">
+        <p id="txt-erro">Não foi possível iniciar a partilha.</p>
+      </div>
+      <button id="btn-retry" class="botao-comecar" data-testid="cliente-retry-btn" style="margin-top:18px">Tentar novamente</button>
+    </section>
+  </main>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="/cliente.js"></script>
+</body>
+</html>
