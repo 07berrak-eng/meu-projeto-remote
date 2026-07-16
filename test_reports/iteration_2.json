@@ -1,0 +1,36 @@
+{
+  "summary": "Frontend regression test for the two reported bugs. FIX 1 (video maior + tela cheia) and FIX 2 (relay do circulo end-to-end) both confirmed working via headless Playwright with two browser tabs (tecnico + cliente).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "tecnico.js click handler correctly does letterbox-aware mapping (object-fit: contain) and falls back to raw rect when videoWidth/Height are 0 (case in headless without real stream) — good.",
+    "cliente.js mostrarCirculo uses window.innerWidth/innerHeight for placement which is correct given tecnico sends percentages of the video content area.",
+    "video-caixa has min-height:62vh and :fullscreen rule to fill the screen — matches the fix spec.",
+    "Minor: video-ecra element with no stream is only ~150px tall (letterboxed inside 62vh caixa) — clicks still work because video-espera has pointer-events:none. Fine for real usage (real stream fills the box)."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped as requested)", "frontend": "100%"},
+  "test_credentials": "suporte@atlas.pt / Garciafinancas007 (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "One ephemeral session created by opening /cliente.html?op=<linkId> during test; cleared via btn-limpar before test.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Two-tab flow works reliably in this env. Key checks: video-caixa height >= 0.62*viewport (measured 669.6px on 1080 viewport); btn-fullscreen sets document.fullscreenElement (works headless with fake-media Chromium flags); technician click -> server relay -> client .circulo-toque appears in DOM within <200ms; marca-clique-tec loses 'oculto' class on tecnico side.",
+  "verified_scenarios": [
+    "Login tecnico + link-cliente rendered",
+    "Client tab connects and appears as Online in tecnico CRM (data-testid=sessao-<id>)",
+    "btn-ver-<id> opens modal-ver (no oculto)",
+    "video-caixa min-height 62vh honoured (~669px @1080 viewport)",
+    "btn-fullscreen present and requestFullscreen succeeds",
+    "Click on video-ecra shows marca-clique-tec on tecnico side",
+    "Same click triggers .circulo-toque element in client DOM (socket relay end-to-end)"
+  ]
+}

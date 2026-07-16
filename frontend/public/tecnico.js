@@ -198,10 +198,42 @@
 
   el("video-ecra").addEventListener("click", (e) => {
     if (!sessaoAtiva) return;
-    const r = e.target.getBoundingClientRect();
-    const x = ((e.clientX - r.left) / r.width) * 100;
-    const y = ((e.clientY - r.top) / r.height) * 100;
+    const v = e.currentTarget;
+    const rect = v.getBoundingClientRect();
+    const vw = v.videoWidth, vh = v.videoHeight;
+    let x, y;
+    if (vw && vh) {
+      // Mapeamento preciso considerando as barras pretas (object-fit: contain)
+      const escala = Math.min(rect.width / vw, rect.height / vh);
+      const larg = vw * escala, alt = vh * escala;
+      const offX = (rect.width - larg) / 2, offY = (rect.height - alt) / 2;
+      const cx = e.clientX - rect.left - offX;
+      const cy = e.clientY - rect.top - offY;
+      if (cx < 0 || cy < 0 || cx > larg || cy > alt) return; // clicou na barra preta
+      x = (cx / larg) * 100;
+      y = (cy / alt) * 100;
+    } else {
+      x = ((e.clientX - rect.left) / rect.width) * 100;
+      y = ((e.clientY - rect.top) / rect.height) * 100;
+    }
+    // Feedback imediato no ecrã do técnico
+    const m = el("marca-clique-tec");
+    m.style.left = (e.clientX - rect.left) + "px";
+    m.style.top = (e.clientY - rect.top) + "px";
+    m.classList.remove("oculto");
+    m.style.animation = "none";
+    void m.offsetWidth;
+    m.style.animation = "toqueFade 1.5s ease-out forwards";
     socket.emit("tecnico:clique", { sessaoId: sessaoAtiva, x, y });
+  });
+
+  el("btn-fullscreen").addEventListener("click", () => {
+    const caixa = el("video-caixa");
+    if (!document.fullscreenElement) {
+      (caixa.requestFullscreen || caixa.webkitRequestFullscreen || function () {}).call(caixa);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen || function () {}).call(document);
+    }
   });
 
   function fecharModal() {

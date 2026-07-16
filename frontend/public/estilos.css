@@ -141,13 +141,14 @@ button { font-family: inherit; cursor: pointer; border: none; }
 
 .circulo-toque {
   position: fixed;
-  width: 44px; height: 44px;
-  margin: -22px 0 0 -22px;
+  width: 52px; height: 52px;
+  margin: -26px 0 0 -26px;
   border-radius: 50%;
-  border: 3px solid var(--vermelho);
-  background: rgba(226,59,59,.22);
+  border: 4px solid var(--vermelho);
+  background: rgba(226,59,59,.28);
+  box-shadow: 0 0 0 3px rgba(255,255,255,.55), 0 6px 18px rgba(226,59,59,.45);
   pointer-events: none;
-  z-index: 99999;
+  z-index: 2147483647;
   animation: toqueFade 1.5s ease-out forwards;
 }
 @keyframes toqueFade {
@@ -298,27 +299,35 @@ input:focus { outline: none; border-color: var(--verde); }
 /* Modal ver ecrã */
 .modal-fundo {
   position: fixed; inset: 0; z-index: 60;
-  background: rgba(6,10,14,.82); backdrop-filter: blur(6px);
-  display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: rgba(6,10,14,.9); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
 }
 .modal {
   background: var(--painel); border:1px solid var(--linha);
-  border-radius: 18px; width: min(1000px, 100%); box-shadow: var(--sombra);
-  display: flex; flex-direction: column; max-height: 92dvh;
+  border-radius: 18px; width: min(1500px, 100%); box-shadow: var(--sombra);
+  display: flex; flex-direction: column; max-height: 96dvh;
 }
-.modal-cab { display:flex; align-items:center; gap:14px; padding: 16px 20px; border-bottom:1px solid var(--linha); }
+.modal-cab { display:flex; align-items:center; gap:14px; padding: 14px 18px; border-bottom:1px solid var(--linha); }
 .modal-cab .t { font-family:'Sora'; font-weight:600; }
 .modal-cab .dica { font-size:.82rem; color: var(--suave); margin-left:auto; }
-.modal-cab .fechar { background: var(--painel-2); color:var(--suave); width:36px; height:36px; border-radius:10px; font-size:1.1rem; }
-.modal-cab .fechar:hover { color:#fff; }
+.modal-cab .fechar { background: var(--painel-2); color:var(--suave); width:38px; height:38px; border-radius:10px; font-size:1.15rem; }
+.modal-cab .fechar:hover { color:#fff; background: var(--linha); }
 .video-caixa {
   position: relative; background:#000; border-radius: 0 0 18px 18px; overflow:hidden;
-  flex:1; display:flex; align-items:center; justify-content:center; min-height: 320px;
+  flex:1; display:flex; align-items:center; justify-content:center; min-height: 62vh;
 }
-#video-ecra { width:100%; height:100%; max-height: 78dvh; object-fit: contain; cursor: crosshair; display:block; }
+.video-caixa:fullscreen { border-radius: 0; }
+.video-caixa:fullscreen #video-ecra { max-height: 100vh; }
+#video-ecra { width:100%; height:100%; max-height: 84dvh; object-fit: contain; cursor: crosshair; display:block; }
+.marca-clique-tec {
+  position: absolute; width: 46px; height: 46px; margin: -23px 0 0 -23px;
+  border-radius: 50%; border: 3px solid #ff3b3b; background: rgba(255,59,59,.25);
+  pointer-events: none; z-index: 5; animation: toqueFade 1.5s ease-out forwards;
+}
 .video-espera {
   position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:14px; color: var(--suave); text-align:center; padding: 20px;
+  gap:14px; color: var(--suave); text-align:center; padding: 20px; background: #000;
+  pointer-events: none;
 }
 .spinner { width:40px; height:40px; border:3px solid var(--linha); border-top-color: var(--verde); border-radius:50%; animation: girar 1s linear infinite; }
 @keyframes girar { to { transform: rotate(360deg); } }

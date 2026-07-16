@@ -83,10 +83,12 @@
       <div class="modal-cab">
         <span class="t" id="modal-titulo">Ecrã do cliente</span>
         <span class="dica">Clique no ecrã para orientar o cliente (círculo vermelho)</span>
+        <button class="fechar" id="btn-fullscreen" title="Tela cheia" data-testid="btn-fullscreen">⛶</button>
         <button class="fechar" id="btn-fechar-modal" data-testid="btn-fechar-modal">✕</button>
       </div>
-      <div class="video-caixa">
+      <div class="video-caixa" id="video-caixa">
         <video id="video-ecra" autoplay playsinline muted data-testid="video-ecra"></video>
+        <div id="marca-clique-tec" class="marca-clique-tec oculto"></div>
         <div class="video-espera" id="video-espera">
           <div class="spinner"></div>
           <div id="espera-txt">À espera que o cliente partilhe o ecrã…</div>
