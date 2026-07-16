@@ -1,3 +1,4 @@
+/* global io */
 (function () {
   const params = new URLSearchParams(location.search);
   const op = params.get("op");

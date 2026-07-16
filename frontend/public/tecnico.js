@@ -1,3 +1,4 @@
+/* global io */
 (function () {
   const API = location.origin + "/api";
   const el = (id) => document.getElementById(id);
