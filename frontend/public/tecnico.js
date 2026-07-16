@@ -11,6 +11,8 @@
 
   let pc = null;
   let sessaoAtiva = null;
+  let iceQueue = [];
+  let remotoPronto = false;
   const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
   // ---------- Auth ----------
@@ -78,7 +80,12 @@
     socket.on("tecnico:erro", (d) => alert(d && d.msg));
     socket.on("webrtc:offer", aoReceberOferta);
     socket.on("webrtc:ice", async (d) => {
-      try { if (pc && d.candidate) await pc.addIceCandidate(d.candidate); } catch (e) {}
+      if (!d.candidate) return;
+      if (pc && remotoPronto) {
+        try { await pc.addIceCandidate(d.candidate); } catch (e) {}
+      } else {
+        iceQueue.push(d.candidate);
+      }
     });
   }
 
@@ -183,15 +190,29 @@
     if (!sessaoAtiva || !d.sdp) return;
     try {
       if (pc) { try { pc.close(); } catch (e) {} }
+      iceQueue = [];
+      remotoPronto = false;
       pc = new RTCPeerConnection(rtcConfig);
       pc.ontrack = (ev) => {
-        el("video-ecra").srcObject = ev.streams[0];
+        const v = el("video-ecra");
+        v.srcObject = ev.streams[0];
+        v.play().catch(() => {});
         el("video-espera").classList.add("oculto");
       };
       pc.onicecandidate = (ev) => { if (ev.candidate) socket.emit("webrtc:ice", { sessaoId: sessaoAtiva, candidate: ev.candidate }); };
+      pc.oniceconnectionstatechange = () => {
+        const st = pc.iceConnectionState;
+        if (st === "failed" || st === "disconnected") {
+          el("espera-txt").textContent = "Ligação instável. A tentar reconectar… peça ao cliente para tocar em COMEÇAR de novo se continuar preto.";
+          el("video-espera").classList.remove("oculto");
+        }
+      };
       await pc.setRemoteDescription(d.sdp);
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
+      remotoPronto = true;
+      for (const c of iceQueue) { try { await pc.addIceCandidate(c); } catch (e) {} }
+      iceQueue = [];
       socket.emit("webrtc:answer", { sessaoId: sessaoAtiva, sdp: pc.localDescription });
     } catch (e) { console.warn(e); }
   }

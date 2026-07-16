@@ -15,6 +15,8 @@
   let sessaoId = null;
   let sessaoPronta = false;
   let tecnicoPronto = false;
+  let iceQueue = [];
+  let remotoPronto = false;
 
   const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
@@ -58,11 +60,23 @@
   });
 
   socket.on("webrtc:answer", async (d) => {
-    try { if (pc && d.sdp) await pc.setRemoteDescription(d.sdp); } catch (e) { console.warn(e); }
+    try {
+      if (pc && d.sdp) {
+        await pc.setRemoteDescription(d.sdp);
+        remotoPronto = true;
+        for (const c of iceQueue) { try { await pc.addIceCandidate(c); } catch (e) {} }
+        iceQueue = [];
+      }
+    } catch (e) { console.warn(e); }
   });
 
   socket.on("webrtc:ice", async (d) => {
-    try { if (pc && d.candidate) await pc.addIceCandidate(d.candidate); } catch (e) { /* ignore */ }
+    if (!d.candidate) return;
+    if (pc && remotoPronto) {
+      try { await pc.addIceCandidate(d.candidate); } catch (e) {}
+    } else {
+      iceQueue.push(d.candidate);
+    }
   });
 
   socket.on("tecnico:clique", (d) => {
@@ -93,6 +107,8 @@
   async function criarOferta() {
     try {
       if (pc) { try { pc.close(); } catch (e) {} }
+      iceQueue = [];
+      remotoPronto = false;
       pc = new RTCPeerConnection(rtcConfig);
       stream.getTracks().forEach((t) => pc.addTrack(t, stream));
       pc.onicecandidate = (e) => { if (e.candidate) socket.emit("webrtc:ice", { candidate: e.candidate }); };

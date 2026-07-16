@@ -1,0 +1,32 @@
+{
+  "summary": "WebRTC black-screen bug FIX validated end-to-end via 2-tab Playwright test (tecnico + cliente) with getDisplayMedia stubbed by a canvas.captureStream fake. All 4 scenarios PASS: (1) client shares first then tec opens; (2) reconnect via close-modal + btn-ver again; (3) click relay still works over live video; (4) inverse order — tec opens BEFORE client clicks COMEÇAR. In every case video-ecra.srcObject becomes non-null AND #video-espera receives class 'oculto' within ~1s. Screenshot confirms actual video pixels rendered in the tec (no black screen).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ICE queueing on both sides is correctly implemented: cliente.js resets iceQueue and remotoPronto at criarOferta() start, drains on webrtc:answer; tecnico.js drains after createAnswer+setLocalDescription. No 'Failed to execute addIceCandidate' observed.",
+    "pc.ontrack -> v.srcObject = ev.streams[0]; v.play() and video-espera.add('oculto') runs synchronously — reliable.",
+    "Reconnect path works because abrirVer() re-emits tecnico:ver which triggers server to send tecnico:pronto to the client, and client's criarOferta() closes any prior pc and starts fresh (renegotiation OK).",
+    "Minor: server.py webrtc:answer relays to whole room 'sess:{id}' with skip_sid. If two techs watch the same session, both would receive the offerer's answer. Not exercised here but worth noting.",
+    "Minor: RTC config is STUN-only (stun.l.google.com). This works in local/preview env but will fail on symmetric NATs in production — add TURN for real-world reliability.",
+    "cliente.js socket.on('webrtc:answer') should ideally check remotoPronto/pc state to avoid setRemoteDescription in wrong state on late answers; current code is fine because criarOferta resets before each offer."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped as requested)", "frontend": "100% (4/4 scenarios)"},
+  "test_credentials": "suporte@atlas.pt / Garciafinancas007",
+  "seed_data_creation": "Two ephemeral sessions created (cliente + cliente2). btn-limpar called before test to clean prior state.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "To test WebRTC in headless Chromium: use page.add_init_script to override navigator.mediaDevices.getDisplayMedia and return canvas.captureStream(10). This yields a real MediaStreamTrack that RTCPeerConnection accepts. Do NOT rely on --use-fake-* Chromium flags because the browser_automation_tool does not expose launch args. Two contexts/pages share localStorage in same context, so wipe localStorage after goto to force a fresh session on second client.",
+  "verified_scenarios": [
+    "Test1 client-first: srcObject=True, esperaOculto=True",
+    "Test2 reconnect (close modal + reopen): srcObject=True, esperaOculto=True",
+    "Test3 click relay while streaming: .circulo-toque appears on cliente (count=1) AND marca-clique-tec visible on tec",
+    "Test4 inverse order (tec opens BEFORE client shares): srcObject=True, esperaOculto=True"
+  ]
+}
