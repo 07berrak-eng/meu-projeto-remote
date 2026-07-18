@@ -1,0 +1,29 @@
+{
+  "summary": "Regression test after iceReady ReferenceError fix in cliente.js/tecnico.js. Confirmed: WebRTC screen-share now works end-to-end. Video stream appears on tecnico side (blue/green canvas frames via getDisplayMedia stub) in all 3 scenarios: (1) main flow cliente-first then tecnico Ver, (2) reverse order (tecnico Ver before cliente COMEÇAR), (3) reconnect (close modal + reopen). No ReferenceError for iceReady, no 'io is not defined' errors on either page.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Reconnect (close modal then reopen btn-ver)", "issue": "Non-blocking WebRTC console warning on cliente: 'InvalidStateError: Failed to execute setRemoteDescription: Called in wrong state: stable'. Video still displays correctly (width=320, esperaOculto=True), so functionally OK; likely cliente peer connection not re-created between reconnect cycles. Consider closing/recreating RTCPeerConnection on tecnico:watch when a previous connection is stable.", "affected_selectors": ["#video-ecra"]},
+      {"flow": "Circulo de toque (click on #video-ecra)", "issue": "Playwright click at position(150,150) on #video-ecra did NOT produce .circulo-toque on cliente nor visible #marca-clique-tec (display:none). May be a click-position/coord-mapping issue in tecnico.js when stream is letterboxed, OR the marca-clique feature has a regression. Needs manual verification. Not related to iceReady fix.", "affected_selectors": ["#video-ecra", "#marca-clique-tec", ".circulo-toque"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_7.json"],
+  "action_items": [
+    "(Optional/minor) Investigate RTCPeerConnection lifecycle on cliente for reconnect: close previous pc before setting new remote description, to remove 'wrong state: stable' warning.",
+    "(Optional/minor) Verify circulo-de-toque flow manually — automated click on #video-ecra produced no .circulo-toque on cliente and no visible #marca-clique-tec. Possibly coord mapping bug in tecnico.js click handler when video is letterboxed."
+  ],
+  "critical_code_review_comments": [
+    "iceReady declaration now correctly present in both cliente.js (L22) and tecnico.js (L17); window.io usage consistent. Regression fix verified.",
+    "GET /api/ice returns STUN (stun.l.google.com:19302) + TURN (openrelay.metered.ca) as expected."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped per request)", "frontend": "100% for reported bug (screen-share works); 90% overall (circulo click didn't fire in automation)"},
+  "test_credentials": "suporte@atlas.pt / Garciafinancas007 (from review request)",
+  "seed_data_creation": "None. Multiple test cliente sessions accumulated in tecnico's Historico list from prior test iterations — not blocking.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Screen-share regression is FIXED. If testing circulo-de-toque again, use position on the actual video pixels (video is letterboxed inside #video-ecra container — the black bars mean click at x=150 on a wide viewport may land on the padding). Also, btn-ver-<id> uses backend session UUID, NOT the token in localStorage atlas_token_<opId>; use the FIRST btn-ver-* on the tecnico page (which corresponds to 'Online agora' section) to target the newest cliente.",
+  "rca of the issue": "Reported bug: black screen on tecnico. RCA: cliente.js had `await iceReady` inside criarOferta() but the `const iceReady = fetch(...)` declaration had not been applied in the previous round; this raised ReferenceError inside criarOferta, so no WebRTC offer was ever sent to tecnico -> tecnico stayed on espera state with black video. Fix applied and verified: iceReady declared in cliente.js:22 and tecnico.js:17, and io() calls replaced with window.io(). Confirmed by (a) console captures show NO 'iceReady is not defined' / 'io is not defined' errors on either page during full flow, and (b) video-ecra.srcObject becomes non-null with videoWidth=320 and video-espera gains 'oculto' class in all 3 scenarios."
+}

@@ -19,7 +19,7 @@
   let remotoPronto = false;
 
   let rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
-  fetch(location.origin + "/api/ice")
+  const iceReady = fetch(location.origin + "/api/ice")
     .then((r) => r.json())
     .then((c) => { if (c && c.iceServers) rtcConfig = c; })
     .catch(() => {});
@@ -40,7 +40,7 @@
   }
 
   // ---- Socket.io ----
-  socket = io(location.origin, { path: "/api/socketio", transports: ["websocket", "polling"] });
+  socket = window.io(location.origin, { path: "/api/socketio", transports: ["websocket", "polling"] });
 
   socket.on("connect", () => {
     socket.emit("cliente:hello", { op, token, userAgent: navigator.userAgent });

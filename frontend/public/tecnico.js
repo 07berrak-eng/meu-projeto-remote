@@ -79,7 +79,7 @@
   }
 
   function ligarSocket() {
-    socket = io(location.origin, { path: "/api/socketio", transports: ["websocket", "polling"], auth: { token } });
+    socket = window.io(location.origin, { path: "/api/socketio", transports: ["websocket", "polling"], auth: { token } });
     socket.on("sessoes:atualizar", (lista) => { sessoes = lista || []; render(); });
     socket.on("tecnico:erro", (d) => alert(d && d.msg));
     socket.on("webrtc:offer", aoReceberOferta);
