@@ -93,9 +93,9 @@
     try {
       if ("wakeLock" in navigator) {
         wakeLock = await navigator.wakeLock.request("screen");
-        wakeLock.addEventListener("release", () => {});
+        wakeLock.addEventListener("release", () => { wakeLock = null; });
       }
-    } catch (e) { /* ignore */ }
+    } catch (e) { wakeLock = null; }
   }
 
   function libertarWakeLock() {

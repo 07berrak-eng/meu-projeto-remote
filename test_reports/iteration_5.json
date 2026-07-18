@@ -1,0 +1,30 @@
+{
+  "summary": "RETEST after fix in /app/frontend/public/cliente.js (release listener now nulls the closure `wakeLock`). All 4 requested scenarios PASS via Playwright with add_init_script stubs installed BEFORE navigating to /cliente.html?op=<linkId>. Wake lock re-acquisition on visibilitychange visible now fires (window.__wakeCalls goes from 1 to 2). Regression flow with tecnico login + btn-ver-<id> also passes: #video-ecra.srcObject non-null, #video-espera has class 'oculto', and clicking video-ecra creates a .circulo-toque on the cliente.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Wake Lock in a hidden tab remains impossible by spec — the fix correctly re-acquires when the tab becomes visible, but on iOS Safari wakeLock is still unsupported. A NoSleep.js fallback or silent audio loop for iOS would improve real-world coverage.",
+    "getDisplayMedia constraint `video.cursor: 'always'` is a legacy/non-standard hint in newer Chromium; still accepted today, so functionally fine."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped as requested)", "frontend": "100% (4/4 scenarios)"},
+  "test_credentials": "suporte@atlas.pt / Garciafinancas007",
+  "seed_data_creation": "Reused existing link op=7b6078d21a on the seeded tecnico account.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Stub strategy: use context.new_page() + add_init_script to install navigator.wakeLock (whose request pushes into window.__wakeCalls and returns a sentinel whose addEventListener('release', cb) stores cb into window.__releaseCbs) and navigator.mediaDevices.getDisplayMedia (canvas.captureStream(10)) BEFORE goto(cliente.html?op=<id>). To simulate UA auto-release fire the stored release callback; then dispatch visibilitychange with document.visibilityState hidden then visible. Expected: __wakeCalls.length>=2.",
+  "verified_scenarios": [
+    "PASS: getDisplayMedia called with {video:{cursor:'always',frameRate:10}, audio:false}",
+    "PASS: navigator.wakeLock.request('screen') called exactly once on comecar",
+    "PASS: after simulated release + visibilitychange hidden->visible, wakeLock.request('screen') is called again (re-acquisition works)",
+    "PASS: cliente-parar-btn -> sentinel.release() invoked and tela-inicio (cliente-comecar-btn) is visible again",
+    "PASS: regression - tecnico login + btn-ver-<id> -> #video-ecra.srcObject non-null AND #video-espera has class 'oculto'; click on video-ecra creates .circulo-toque on cliente"
+  ],
+  "rca of the issue": "Previously the release listener was a no-op so the closure var `wakeLock` stayed truthy after the UA auto-released, and the visibilitychange guard `!wakeLock` was never true. Fix in cliente.js line 96 (`wakeLock.addEventListener('release', () => { wakeLock = null; });`) makes the guard reachable, allowing pedirWakeLock() to run again on visibility return. Verified end-to-end."
+}
