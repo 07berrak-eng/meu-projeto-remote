@@ -87,14 +87,38 @@
   });
 
   // ---- Partilha de ecrã ----
+  let wakeLock = null;
+
+  async function pedirWakeLock() {
+    try {
+      if ("wakeLock" in navigator) {
+        wakeLock = await navigator.wakeLock.request("screen");
+        wakeLock.addEventListener("release", () => {});
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  function libertarWakeLock() {
+    try { if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch (e) {}
+  }
+
+  // Re-adquire o wake lock quando o cliente volta ao separador (é libertado automaticamente ao esconder)
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && stream && !wakeLock) pedirWakeLock();
+  });
+
   async function comecar() {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
         erro("O seu navegador não suporta partilha de ecrã. Em iPhone/iPad (Safari) esta função não está disponível.");
         return;
       }
-      stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 8 }, audio: false });
+      stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { cursor: "always", frameRate: 10 },
+        audio: false,
+      });
       mostrar(telaAtivo);
+      await pedirWakeLock();
       socket.emit("cliente:partilhar", { ativo: true });
       stream.getVideoTracks()[0].addEventListener("ended", pararPartilha);
       if (tecnicoPronto) criarOferta();
@@ -121,6 +145,7 @@
   function pararPartilha() {
     if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
     if (pc) { try { pc.close(); } catch (e) {} pc = null; }
+    libertarWakeLock();
     socket.emit("cliente:partilhar", { ativo: false });
     mostrar(telaInicio);
   }

@@ -1,0 +1,40 @@
+{
+  "summary": "Validated cursor + wake lock fixes in /app/frontend/public/cliente.js via Playwright with getDisplayMedia and navigator.wakeLock stubs installed via add_init_script BEFORE navigation. 3 of 4 requested scenarios PASS. 1 scenario (re-acquisition on visibilitychange) FAILS due to a real logic bug in the fix: the closure variable `wakeLock` is never nulled when the browser auto-releases the sentinel while the tab is hidden, so the guard `!wakeLock` in the visibilitychange listener is always false and re-acquisition never fires. Regression flow (tecnico login + btn-ver -> video-ecra.srcObject non-null + #video-espera oculto) still works.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Screen Wake Lock re-acquisition after tab visibility returns",
+        "issue": "In cliente.js the visibilitychange listener guards with `!wakeLock` but wakeLock is only ever nulled inside libertarWakeLock() (called on parar). When the browser auto-releases the sentinel while the tab is hidden, the JS reference is NOT touched, so on `visibilitychange -> visible` the guard `!wakeLock` is false and navigator.wakeLock.request('screen') is NEVER called again. Confirmed: after dispatching visibilitychange hidden then visible with an active stream, window.__wakeCalls.length remained at 1 (only the initial call).",
+        "affected_selectors": ["cliente-comecar-btn"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Fix wake lock re-acquisition: inside pedirWakeLock(), change the empty release listener to also null the closure var. E.g. `wakeLock.addEventListener('release', () => { wakeLock = null; });`. This lets the existing visibilitychange listener re-request when the tab becomes visible again. Without this the reported bug #1 (screen turns off, share stops) is only partially mitigated — the initial request works, but the automatic re-acquire path is dead code."
+  ],
+  "critical_code_review_comments": [
+    "cliente.js line 96: `wakeLock.addEventListener('release', () => {});` is a no-op. It MUST set `wakeLock = null` so that the visibilitychange re-acquire branch (line 107 `!wakeLock`) can ever be true.",
+    "getDisplayMedia constraint `video.cursor: 'always'` is deprecated in newer specs (replaced by `preferCurrentTab`/`surfaceSwitching`/`selfBrowserSurface`, and cursor via `displaySurface` hints). Chromium still accepts it as a legacy hint, so it works today, but consider adding `{ cursor: 'always' }` as a MediaTrackConstraints on the track (applyConstraints) too for future-proofing.",
+    "Wake Lock in a hidden tab is impossible by spec — this cannot fix the case where the OS itself sleeps (only the display staying on while tab is visible). Consider also playing a tiny silent looping audio to keep the tab active on some platforms, or a NoSleep.js fallback for iOS Safari (where wakeLock is unsupported).",
+    "cliente.js has no try/catch around addEventListener('release',...) — safe today, but if wakeLock.request returns non-standard object on older browsers it could throw before the sentinel is stored. Not a critical bug."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped as requested)", "frontend": "75% (3/4 scenarios: cursor OK, wake-start OK, wake-stop OK, wake-revisibility FAIL; regression OK)"},
+  "test_credentials": "suporte@atlas.pt / Garciafinancas007",
+  "seed_data_creation": "One ephemeral session created via cliente stub for op=7b6078d21a.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "To verify the wake-lock re-acquire fix, use the same add_init_script stubs (window.__gdmArgs, window.__wakeCalls, window.__releaseCalls). After clicking cliente-comecar-btn (wakeCalls==['screen']), dispatch visibilitychange with document.visibilityState='hidden' then 'visible'. Expected: window.__wakeCalls.length becomes >=2. Currently it stays at 1 because wakeLock closure is not cleared on release.",
+  "verified_scenarios": [
+    "PASS: getDisplayMedia called with {video:{cursor:'always',frameRate:10}, audio:false}",
+    "PASS: navigator.wakeLock.request('screen') called exactly once on comecar",
+    "PASS: cliente-parar-btn -> sentinel.release() called + tela-inicio visible + cliente-comecar-btn visible again",
+    "FAIL: visibilitychange hidden->visible does NOT re-invoke wakeLock.request (root cause: closure var not nulled on browser auto-release)",
+    "PASS: regression - tec login + btn-ver-<id> -> #video-ecra.srcObject non-null AND #video-espera has class 'oculto'"
+  ],
+  "rca of the issue": "In cliente.js pedirWakeLock() stores the sentinel in the closure variable `wakeLock` and attaches an empty release listener. When the tab is hidden the User Agent auto-releases the sentinel and fires the release event, but the JS reference `wakeLock` remains truthy. The visibilitychange listener re-acquires only when `!wakeLock`, so it never fires. Fix: in the release listener, `wakeLock = null;`. Reproduction: open cliente.html, click cliente-comecar-btn, dispatch visibilitychange twice (hidden then visible). Observe window.__wakeCalls length stays 1."
+}
