@@ -134,6 +134,7 @@
 
   async function criarOferta() {
     try {
+      await iceReady;
       if (pc) { try { pc.close(); } catch (e) {} }
       iceQueue = [];
       remotoPronto = false;

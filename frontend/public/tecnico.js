@@ -14,7 +14,7 @@
   let iceQueue = [];
   let remotoPronto = false;
   let rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
-  fetch(API + "/ice")
+  const iceReady = fetch(API + "/ice")
     .then((r) => r.json())
     .then((c) => { if (c && c.iceServers) rtcConfig = c; })
     .catch(() => {});
@@ -193,6 +193,7 @@
   async function aoReceberOferta(d) {
     if (!sessaoAtiva || !d.sdp) return;
     try {
+      await iceReady;
       if (pc) { try { pc.close(); } catch (e) {} }
       iceQueue = [];
       remotoPronto = false;
