@@ -1,0 +1,19 @@
+{
+  "summary": "Non-regression retest after adding pc.signalingState==='have-local-offer' guard in cliente.js socket.on('webrtc:answer'). All 4 review scenarios PASS. The 'InvalidStateError: setRemoteDescription wrong state: stable' warning previously reported in iteration_7/8 is now GONE (0 occurrences across full E2E flow including tecnico-initiated reconnect).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/test_reports/iteration_9.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "cliente.js line 77 guard `pc.signalingState === 'have-local-offer'` correctly filters stale answers arriving in 'stable' state (post pc.close during reconnect). No side effects observed.",
+    "Consider also logging (dev-only) when an answer is dropped due to state mismatch, for future debuggability."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped per request)", "frontend": "100% (4/4 scenarios)"},
+  "test_credentials": "suporte@atlas.pt / Garciafinancas007",
+  "seed_data_creation": "None (some sessions accumulate on historico).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Reuse iteration_8 strategy: monkey-patch RTCPeerConnection.prototype.addTrack via add_init_script to capture window.__capturedTrack; then t.stop()+dispatchEvent(new Event('ended')) triggers Partilha interrompida. Read link-cliente via textContent (it's a <span>, not <input>). Use FIRST '#grelha-online button.ver' for online session.",
+  "rca of the issue": "N/A — guard fix validated. Detailed observations: TEST1 (normal btn-ver) hasStream=true w=1280 esperaHidden=true; TEST2 (tecnico reconnect flow) titulo='Reconectar?' -> after click hasStream=true esperaHidden=true, setRemoteDescription warnings during reconnect = 0; TEST3 track.stop+ended -> titulo='Partilha interrompida'; TEST4 click #video-ecra -> circulo-toque count 0->1 on cliente. Total setRemoteDescription warnings across full run = 0, iceReady/io undefined errors = 0, pageerrors = 0."
+}

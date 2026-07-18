@@ -74,7 +74,7 @@
 
   socket.on("webrtc:answer", async (d) => {
     try {
-      if (pc && d.sdp) {
+      if (pc && d.sdp && pc.signalingState === "have-local-offer") {
         await pc.setRemoteDescription(d.sdp);
         remotoPronto = true;
         for (const c of iceQueue) { try { await pc.addIceCandidate(c); } catch (e) {} }
