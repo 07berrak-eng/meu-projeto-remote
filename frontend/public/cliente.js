@@ -9,6 +9,7 @@
   const telaInicio = el("tela-inicio");
   const telaAtivo = el("tela-ativo");
   const telaErro = el("tela-erro");
+  const telaReconectar = el("tela-reconectar");
   const txtErro = el("txt-erro");
 
   let socket, pc, stream;
@@ -25,8 +26,16 @@
     .catch(() => {});
 
   function mostrar(tela) {
-    [telaInicio, telaAtivo, telaErro].forEach((t) => t.classList.add("oculto"));
+    [telaInicio, telaAtivo, telaErro, telaReconectar].forEach((t) => t.classList.add("oculto"));
     tela.classList.remove("oculto");
+  }
+
+  function mostrarReconectar(titulo, msg) {
+    if (stream) return; // já está a partilhar
+    el("reconectar-titulo").textContent = titulo;
+    el("reconectar-msg").textContent = msg;
+    mostrar(telaReconectar);
+    try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
   }
 
   function erro(msg) {
@@ -90,6 +99,10 @@
     replicarToque(px, py);
   });
 
+  socket.on("cliente:pedir-reconexao", () => {
+    mostrarReconectar("Reconectar?", "O técnico pediu para retomar a partilha do seu ecrã. Toque em RECONECTAR para continuar.");
+  });
+
   // ---- Partilha de ecrã ----
   let wakeLock = null;
 
@@ -124,7 +137,7 @@
       mostrar(telaAtivo);
       await pedirWakeLock();
       socket.emit("cliente:partilhar", { ativo: true });
-      stream.getVideoTracks()[0].addEventListener("ended", pararPartilha);
+      stream.getVideoTracks()[0].addEventListener("ended", partilhaInterrompida);
       if (tecnicoPronto) criarOferta();
     } catch (e) {
       console.warn(e);
@@ -147,12 +160,25 @@
     } catch (e) { console.warn(e); }
   }
 
-  function pararPartilha() {
+  function limparRecursos() {
     if (stream) { stream.getTracks().forEach((t) => t.stop()); stream = null; }
     if (pc) { try { pc.close(); } catch (e) {} pc = null; }
     libertarWakeLock();
     socket.emit("cliente:partilhar", { ativo: false });
+  }
+
+  function pararPartilha() {
+    limparRecursos();
     mostrar(telaInicio);
+  }
+
+  // Chamado quando a captura termina sozinha (ecrã adormeceu, sistema parou, etc.)
+  function partilhaInterrompida() {
+    limparRecursos();
+    mostrarReconectar(
+      "Partilha interrompida",
+      "A partilha do seu ecrã parou (o ecrã pode ter adormecido). Toque em RECONECTAR para continuar."
+    );
   }
 
   // ---- Círculo vermelho + toque simulado ----
@@ -179,5 +205,6 @@
 
   el("btn-comecar").addEventListener("click", comecar);
   el("btn-retry").addEventListener("click", comecar);
+  el("btn-reconectar").addEventListener("click", comecar);
   el("btn-parar").addEventListener("click", pararPartilha);
 })();

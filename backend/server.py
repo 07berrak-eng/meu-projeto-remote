@@ -302,6 +302,18 @@ async def tecnico_parar(sid, data):
         await sio.leave_room(sid, f"sess:{sessao_id}")
 
 
+@sio.on("tecnico:pedir-reconexao")
+async def tecnico_pedir_reconexao(sid, data):
+    email = sid_operador.get(sid)
+    sessao_id = (data or {}).get("sessaoId")
+    if not email or not sessao_id:
+        return
+    doc = await db.sessoes.find_one({"id": sessao_id, "operador": email})
+    if not doc or not doc.get("sid"):
+        return
+    await sio.emit("cliente:pedir-reconexao", {}, to=doc["sid"])
+
+
 @sio.on("webrtc:offer")
 async def webrtc_offer(sid, data):
     sessao_id = sid_sessao.get(sid)

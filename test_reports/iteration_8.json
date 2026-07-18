@@ -1,0 +1,28 @@
+{
+  "summary": "Full E2E validation of the two new reconnect features (technician-initiated reconnect notification + client-side partilha-interrompida screen). All 5 review-request scenarios pass end-to-end via 2 browser contexts + RTCPeerConnection.addTrack monkey-patch to capture the fake MediaStreamTrack for the 'ended' simulation.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Reconnect after 'Partilha interrompida' -> click cliente-reconectar-btn -> new offer", "issue": "Non-blocking cliente warning: 'InvalidStateError: Failed to execute setRemoteDescription: Called in wrong state: stable'. Video reconnects successfully; same warning previously reported in iteration_7. Consider closing previous RTCPeerConnection on cliente before creating a new offer.", "affected_selectors": ["#video-ecra"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_8.json"],
+  "action_items": [
+    "(Optional/minor) In cliente.js criarOferta(), the pc.close() on previous pc already exists — but the console warning still appears; investigate whether the second offer arrives before setRemoteDescription resolves. Non-blocking."
+  ],
+  "critical_code_review_comments": [
+    "cliente.js mostrarReconectar() correctly guards with `if (stream) return` to avoid re-triggering during active share.",
+    "cliente.js partilhaInterrompida() correctly calls limparRecursos() (which sets stream=null) before showing the reconectar screen, so the guard doesn't block it.",
+    "tecnico.js abrirVer() correctly emits tecnico:pedir-reconexao when the target session is not already aPartilhar. Backend @sio.on('tecnico:pedir-reconexao') enforces operator ownership before relaying to the cliente sid — correct auth check."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped per request; socket handler validated indirectly via UI)", "frontend": "100% (5/5 scenarios)"},
+  "test_credentials": "suporte@atlas.pt / Garciafinancas007",
+  "seed_data_creation": "None (a few test sessions accumulate on the tecnico historico list, non-blocking).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "For 'Partilha interrompida' simulation via getDisplayMedia stub: Playwright's Chromium uses --use-fake-device-for-media-stream so navigator.mediaDevices.getDisplayMedia cannot be reliably overridden via add_init_script. Instead, monkey-patch RTCPeerConnection.prototype.addTrack in an init script to capture window.__capturedTrack = track, then in the test call track.stop() + track.dispatchEvent(new Event('ended')). This reliably triggers the 'ended' handler bound in cliente.js:140. To reach the cliente via btn-ver, use the FIRST '#grelha-online button.ver' (newest online session).",
+  "rca of the issue": "Not a bug this iteration. Verified test results: Test1 (btn-ver on non-sharing) -> cliente reconectar-titulo='Reconectar?' + btn visible. Test2 (btn-pedir-reconexao) -> button text 'Pedido enviado ✓' + cliente still on reconectar. Test3 (cliente clicks reconectar) -> parar-btn visible, tecnico video srcObject=true w=1280 esperaOculto=true. Test4 (track.stop + ended) -> cliente reconectar visible + titulo='Partilha interrompida'. Test5 (regression: click on video-ecra) -> .circulo-toque count=1 on cliente. No 'iceReady is not defined' or 'io is not defined' errors observed."
+}

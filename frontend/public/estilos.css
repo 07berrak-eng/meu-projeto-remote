@@ -312,6 +312,11 @@ input:focus { outline: none; border-color: var(--verde); }
 .modal-cab .dica { font-size:.82rem; color: var(--suave); margin-left:auto; }
 .modal-cab .fechar { background: var(--painel-2); color:var(--suave); width:38px; height:38px; border-radius:10px; font-size:1.15rem; }
 .modal-cab .fechar:hover { color:#fff; background: var(--linha); }
+.btn-recon-modal {
+  background: var(--verde-escuro); color:#fff; font-weight:700; font-size:.85rem;
+  padding: 9px 14px; border-radius: 10px; transition: background .18s, transform .15s;
+}
+.btn-recon-modal:hover { background: var(--verde); transform: translateY(-1px); }
 .video-caixa {
   position: relative; background:#000; border-radius: 0 0 18px 18px; overflow:hidden;
   flex:1; display:flex; align-items:center; justify-content:center; min-height: 62vh;

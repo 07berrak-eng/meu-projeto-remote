@@ -185,9 +185,19 @@
     const s = sessoes.find((x) => x.id === id);
     el("modal-titulo").textContent = (s && (s.nome || dispositivo(s.userAgent))) || "Ecrã do cliente";
     el("video-espera").classList.remove("oculto");
-    el("espera-txt").textContent = s && s.aPartilhar ? "A ligar ao ecrã do cliente…" : "À espera que o cliente toque em COMEÇAR…";
+    el("espera-txt").textContent = s && s.aPartilhar ? "A ligar ao ecrã do cliente…" : "À espera que o cliente toque em RECONECTAR…";
     el("modal-ver").classList.remove("oculto");
     socket.emit("tecnico:ver", { sessaoId: id });
+    // Se o cliente não está a partilhar, pede-lhe para reconectar (mostra notificação no telemóvel/PC dele)
+    if (!s || !s.aPartilhar) socket.emit("tecnico:pedir-reconexao", { sessaoId: id });
+  }
+
+  function pedirReconexao() {
+    if (!sessaoAtiva) return;
+    socket.emit("tecnico:pedir-reconexao", { sessaoId: sessaoAtiva });
+    const b = el("btn-pedir-reconexao");
+    b.textContent = "Pedido enviado ✓";
+    setTimeout(() => (b.textContent = "🔄 Pedir reconexão"), 1800);
   }
 
   async function aoReceberOferta(d) {
@@ -252,6 +262,8 @@
     m.style.animation = "toqueFade 1.5s ease-out forwards";
     socket.emit("tecnico:clique", { sessaoId: sessaoAtiva, x, y });
   });
+
+  el("btn-pedir-reconexao").addEventListener("click", pedirReconexao);
 
   el("btn-fullscreen").addEventListener("click", () => {
     const caixa = el("video-caixa");

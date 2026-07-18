@@ -61,6 +61,18 @@
       </div>
       <button id="btn-retry" class="botao-comecar" data-testid="cliente-retry-btn" style="margin-top:18px">Tentar novamente</button>
     </section>
+
+    <!-- Estado reconectar -->
+    <section id="tela-reconectar" class="oculto">
+      <div class="c-cartao">
+        <div class="pulso" data-testid="cliente-reconectar-pulso" style="color:#c9861a;background:#fdf1dc">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        </div>
+        <h2 id="reconectar-titulo">Reconectar?</h2>
+        <p id="reconectar-msg">O técnico pediu para retomar a partilha do seu ecrã.</p>
+        <button id="btn-reconectar" class="botao-comecar" data-testid="cliente-reconectar-btn"><span>🔄</span> RECONECTAR</button>
+      </div>
+    </section>
   </main>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
