@@ -1,0 +1,32 @@
+Política de Privacidade — Atlas Suporte Técnico (Extensão Chrome)
+
+Última atualização: 2026
+
+A extensão "Atlas Suporte Técnico" destina-se exclusivamente a sessões de
+suporte técnico remoto solicitadas pelo próprio utilizador.
+
+1. Dados recolhidos
+   - A extensão NÃO recolhe, armazena nem vende dados pessoais.
+   - Guarda apenas, localmente no seu navegador (chrome.storage.local), o
+     identificador da sessão de suporte (código do operador e token da sessão)
+     para poder reconectar. Estes dados são apagados quando o suporte é desativado.
+
+2. Utilização das permissões
+   - "debugger": usada apenas para reproduzir, na página ativa, os cliques que o
+     técnico indica durante a sessão de suporte. Não é usada para monitorização.
+   - "<all_urls>" / "scripting" / "tabs": necessárias para desenhar o círculo de
+     orientação e reproduzir o clique na página que o utilizador está a ver.
+   - "offscreen" / "storage": manter a ligação em tempo real ao servidor de
+     suporte e guardar localmente a sessão.
+
+3. Transmissão de dados
+   - A extensão comunica unicamente com o servidor de suporte Atlas indicado pelo
+     link fornecido pelo técnico, através de ligação segura, e apenas durante a
+     sessão de suporte iniciada pelo utilizador.
+
+4. Controlo do utilizador
+   - O utilizador pode desativar o suporte a qualquer momento pelo ícone da
+     extensão, ou removê-la em chrome://extensions.
+
+5. Contacto
+   - Para questões sobre privacidade, contacte o seu técnico Atlas.

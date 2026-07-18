@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body { width: 280px; margin: 0; font-family: system-ui, sans-serif; background: #0f1720; color: #e8eef3; }
+    .cab { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid #223040; }
+    .cab b { font-size: 15px; }
+    .cab small { display: block; color: #9fb0bf; font-size: 11px; }
+    .corpo { padding: 16px; }
+    .estado { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 12px; }
+    .ponto { width: 10px; height: 10px; border-radius: 50%; background: #5b6b78; }
+    .ponto.on { background: #34a853; box-shadow: 0 0 0 4px rgba(52,168,83,.2); }
+    .info { font-size: 12px; color: #9fb0bf; line-height: 1.5; margin-bottom: 14px; }
+    .info b { color: #cfe9d6; }
+    button { width: 100%; padding: 11px; border: none; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; }
+    .desativar { background: #2a1414; color: #ff9a9a; border: 1px solid rgba(226,59,59,.4); }
+    .desativar:hover { background: #3a1a1a; }
+  </style>
+</head>
+<body>
+  <div class="cab">
+    <b>Atlas Suporte<small>Suporte técnico avançado</small></b>
+  </div>
+  <div class="corpo">
+    <div class="estado"><span class="ponto" id="ponto"></span><span id="txt-estado">A verificar…</span></div>
+    <div class="info" id="info">Abra o link de suporte que o técnico lhe enviou e inicie a partilha de ecrã. A extensão liga-se automaticamente.</div>
+    <button class="desativar" id="btn-desativar" style="display:none">Desativar suporte</button>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

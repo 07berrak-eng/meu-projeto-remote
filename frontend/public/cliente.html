@@ -51,6 +51,9 @@
         <h2>Suporte ativo</h2>
         <p>Está a partilhar o seu ecrã. O técnico já o consegue ajudar. Siga o <strong>círculo vermelho</strong> que aparecer.</p>
         <button id="btn-parar" class="botao-secundario" data-testid="cliente-parar-btn">Parar partilha</button>
+        <a id="link-extensao" class="link-extensao oculto" href="#" target="_blank" rel="noopener" data-testid="cliente-instalar-extensao">
+          ✨ Instalar extensão de suporte avançado
+        </a>
       </div>
     </section>
 
@@ -74,6 +77,8 @@
       </div>
     </section>
   </main>
+
+  <div id="atlas-ext-bridge" style="display:none"></div>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="/cliente.js"></script>

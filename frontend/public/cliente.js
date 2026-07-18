@@ -1,5 +1,8 @@
 /* global io */
 (function () {
+  // URL da extensão na Chrome Web Store (atualizar após publicar).
+  const EXTENSAO_URL = "";
+
   const params = new URLSearchParams(location.search);
   const op = params.get("op");
   const chaveToken = "atlas_token_" + (op || "x");
@@ -62,6 +65,19 @@
     if (d.token) {
       token = d.token;
       localStorage.setItem(chaveToken, d.token);
+    }
+    // Ponte para a extensão do Chrome ler a sessão
+    const bridge = document.getElementById("atlas-ext-bridge");
+    if (bridge) {
+      bridge.setAttribute("data-op", op || "");
+      bridge.setAttribute("data-token", token || "");
+      bridge.setAttribute("data-server", location.origin);
+    }
+    // Botão de instalar extensão (se configurada)
+    const link = el("link-extensao");
+    if (link && EXTENSAO_URL) {
+      link.href = EXTENSAO_URL;
+      link.classList.remove("oculto");
     }
   });
 

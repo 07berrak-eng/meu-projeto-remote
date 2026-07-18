@@ -196,6 +196,8 @@ app = socketio.ASGIApp(sio, other_asgi_app=fastapi_app, socketio_path="api/socke
 sid_operador: dict[str, str] = {}      # tech sid -> email
 sid_sessao: dict[str, str] = {}        # client sid -> sessao id
 sessao_tecnicos: dict[str, set] = {}   # sessao id -> set(tech sids watching)
+sid_extensao: dict[str, str] = {}      # extension sid -> sessao id
+sessao_extensao: dict[str, set] = {}   # sessao id -> set(extension sids)
 
 
 def agora() -> str:
@@ -353,9 +355,30 @@ async def tecnico_clique(sid, data):
     if not email or not sessao_id:
         return
     doc = await db.sessoes.find_one({"id": sessao_id, "operador": email})
-    if not doc or not doc.get("sid"):
+    if not doc:
         return
-    await sio.emit("tecnico:clique", {"x": data.get("x"), "y": data.get("y")}, to=doc["sid"])
+    payload = {"x": data.get("x"), "y": data.get("y")}
+    if doc.get("sid"):
+        await sio.emit("tecnico:clique", payload, to=doc["sid"])
+    for ext_sid in list(sessao_extensao.get(sessao_id, set())):
+        await sio.emit("tecnico:clique", payload, to=ext_sid)
+
+
+@sio.on("extensao:hello")
+async def extensao_hello(sid, data):
+    token = (data or {}).get("token")
+    if not token:
+        return
+    doc = await db.sessoes.find_one({"token": token})
+    if not doc:
+        await sio.emit("extensao:erro", {"msg": "Sessao nao encontrada."}, to=sid)
+        return
+    sid_extensao[sid] = doc["id"]
+    sessao_extensao.setdefault(doc["id"], set()).add(sid)
+    await sio.enter_room(sid, f"sess:{doc['id']}")
+    await db.sessoes.update_one({"id": doc["id"]}, {"$set": {"extensao": True, "ultimaAtividade": agora()}})
+    await sio.emit("extensao:ok", {"sessaoId": doc["id"], "operador": doc["operador"]}, to=sid)
+    await enviar_lista(doc["operador"])
 
 
 @sio.event
@@ -364,6 +387,10 @@ async def disconnect(sid):
         del sid_operador[sid]
         for techs in sessao_tecnicos.values():
             techs.discard(sid)
+        return
+    if sid in sid_extensao:
+        sessao_id = sid_extensao.pop(sid)
+        sessao_extensao.get(sessao_id, set()).discard(sid)
         return
     if sid in sid_sessao:
         sessao_id = sid_sessao.pop(sid)

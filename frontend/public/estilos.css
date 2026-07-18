@@ -119,6 +119,21 @@ button { font-family: inherit; cursor: pointer; border: none; }
 }
 .botao-secundario:hover { background: #fff2f2; }
 
+.link-extensao {
+  display: block;
+  margin-top: 16px;
+  padding: 13px 18px;
+  border-radius: 14px;
+  background: #eef6ea;
+  border: 1.5px solid #cfe6c4;
+  color: #1f7a3d;
+  font-weight: 700;
+  font-size: .95rem;
+  text-decoration: none;
+  transition: background .18s, transform .15s;
+}
+.link-extensao:hover { background: #e2f0da; transform: translateY(-1px); }
+
 .limitacoes {
   font-size: .86rem;
   color: #47624f;
