@@ -18,7 +18,11 @@
   let iceQueue = [];
   let remotoPronto = false;
 
-  const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+  let rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+  fetch(location.origin + "/api/ice")
+    .then((r) => r.json())
+    .then((c) => { if (c && c.iceServers) rtcConfig = c; })
+    .catch(() => {});
 
   function mostrar(tela) {
     [telaInicio, telaAtivo, telaErro].forEach((t) => t.classList.add("oculto"));

@@ -102,6 +102,22 @@ async def root():
     return {"app": "Suporte Tecnico Atlas", "ok": True}
 
 
+@api.get("/ice")
+async def ice_config():
+    servers = []
+    stun = [u.strip() for u in os.environ.get("STUN_URLS", "").split(",") if u.strip()]
+    if stun:
+        servers.append({"urls": stun})
+    turn_urls = [u.strip() for u in os.environ.get("TURN_URLS", "").split(",") if u.strip()]
+    turn_user = os.environ.get("TURN_USERNAME", "")
+    turn_cred = os.environ.get("TURN_CREDENTIAL", "")
+    if turn_urls and turn_user:
+        servers.append({"urls": turn_urls, "username": turn_user, "credential": turn_cred})
+    if not servers:
+        servers.append({"urls": ["stun:stun.l.google.com:19302"]})
+    return {"iceServers": servers}
+
+
 @api.post("/auth/login")
 async def login(dados: LoginIn):
     email = dados.email.strip().lower()

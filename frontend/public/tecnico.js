@@ -13,7 +13,11 @@
   let sessaoAtiva = null;
   let iceQueue = [];
   let remotoPronto = false;
-  const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+  let rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+  fetch(API + "/ice")
+    .then((r) => r.json())
+    .then((c) => { if (c && c.iceServers) rtcConfig = c; })
+    .catch(() => {});
 
   // ---------- Auth ----------
   async function api(caminho, opcoes = {}) {

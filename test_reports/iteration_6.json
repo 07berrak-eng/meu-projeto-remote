@@ -1,0 +1,25 @@
+{
+  "summary": "Feature TURN validated end-to-end. Backend GET /api/ice returns STUN + TURN(openrelayproject) as expected. Cliente.js fetches /api/ice on load and passes iceServers (with TURN) into RTCPeerConnection. Regression flow (technician login + btn-ver-<id> + cliente com stub getDisplayMedia) confirms #video-ecra.srcObject non-null, #video-espera has class 'oculto', click on video-ecra creates .circulo-toque on the cliente and shows #marca-clique-tec on the tecnico. All 19 pytest backend tests pass.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/backend_test.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "cliente.js and tecnico.js issue the /api/ice fetch on load but do not await it before criarOferta/aoReceberOferta may run. In practice the socket handshake+cliente:hello+getDisplayMedia give more than enough time, but a defensive `iceReady` promise gating criarOferta/aoReceberOferta would remove any race in slow networks.",
+    "TURN credentials are exposed publicly via /api/ice (by design for the free OpenRelay). If a paid TURN is used later, consider short-lived HMAC time-limited credentials instead of a static shared secret in .env."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (19/19)", "frontend": "100% (all TURN + regression scenarios)"},
+  "test_credentials": "suporte@atlas.pt / Garciafinancas007",
+  "seed_data_creation": "None. Reused seeded tecnico linkId=7b6078d21a.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Verified: GET /api/ice returns {iceServers:[STUN google, TURN openrelay with username/credential=openrelayproject]}. cliente.js is observed issuing GET /api/ice on load; the RTCPeerConnection was intercepted (via add_init_script wrapping window.RTCPeerConnection) and window.__lastRtcConfig contains the TURN block. Fallback path (route abort /api/ice) not explicitly tested but code defaults to STUN google — safe by inspection.",
+  "verified_scenarios": [
+    "PASS: GET /api/ice unauthenticated returns 200 with STUN + TURN openrelay block",
+    "PASS: cliente.html triggers GET /api/ice on load (1 request)",
+    "PASS: RTCPeerConnection on cliente uses config with TURN openrelay (username/credential)",
+    "PASS: regression - tecnico btn-ver-<id> -> #video-ecra.srcObject != null, #video-espera has class 'oculto'",
+    "PASS: regression circulo - click on #video-ecra spawns .circulo-toque on cliente and shows #marca-clique-tec on tecnico"
+  ]
+}
