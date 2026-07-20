@@ -1,14 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Atlas Suporte Técnico",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Suporte técnico remoto Atlas: mostra o ponteiro do técnico (círculo) e permite orientar cliques em qualquer site do navegador.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "permissions": ["debugger", "offscreen", "scripting", "storage", "tabs"],
+  "permissions": ["debugger", "offscreen", "storage"],
   "host_permissions": ["<all_urls>"],
   "background": { "service_worker": "background.js", "type": "module" },
   "content_scripts": [
