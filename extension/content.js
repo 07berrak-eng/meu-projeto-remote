@@ -58,6 +58,7 @@
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg && msg.destino === "content" && msg.tipo === "clique") {
       const r = mapear(msg.x, msg.y);
+      console.log("[Atlas content] clique %", msg.x, msg.y, "->", r, "screen", screen.width, screen.height, "winpos", window.screenX, window.screenY, "inner", window.innerWidth, window.innerHeight);
       if (r.dentro) desenharCirculo(r.vx, r.vy);
       sendResponse(r);
       return true;

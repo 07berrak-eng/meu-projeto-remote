@@ -20,7 +20,10 @@ async function ativarSuporte(cfg) {
   sessaoInfo = { ...cfg, ligado: false };
   await chrome.storage.local.set({ atlasSessao: cfg });
   await garantirOffscreen();
-  chrome.runtime.sendMessage({ destino: "offscreen", tipo: "ligar", cfg });
+  // pequeno atraso para o documento offscreen registar o listener
+  setTimeout(() => {
+    chrome.runtime.sendMessage({ destino: "offscreen", tipo: "ligar", cfg }).catch(() => {});
+  }, 300);
 }
 
 async function desativarSuporte() {
@@ -62,12 +65,13 @@ async function clicarReal(tabId, vx, vy) {
 
 async function tratarClique(x, y) {
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  console.log("[Atlas bg] clique", x, y, "tab", tab && tab.id, tab && tab.url);
   if (!tab || !tab.id || (tab.url || "").startsWith("chrome")) return;
-  // O content script calcula a posição no viewport (tem acesso a screen/window),
-  // desenha o círculo e devolve as coordenadas para o clique real.
   chrome.tabs.sendMessage(tab.id, { destino: "content", tipo: "clique", x, y }, (resp) => {
-    if (chrome.runtime.lastError || !resp || !resp.dentro) return;
-    clicarReal(tab.id, Math.round(resp.vx), Math.round(resp.vy));
+    if (chrome.runtime.lastError) { console.log("[Atlas bg] sem content script na aba:", chrome.runtime.lastError.message); return; }
+    if (!resp) return;
+    console.log("[Atlas bg] resposta content", resp);
+    if (resp.dentro) clicarReal(tab.id, Math.round(resp.vx), Math.round(resp.vy));
   });
 }
 
@@ -89,6 +93,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   // Do offscreen
   if (msg.destino === "background") {
+    if (msg.tipo === "offscreen-pronto" && sessaoInfo) {
+      chrome.runtime.sendMessage({ destino: "offscreen", tipo: "ligar", cfg: sessaoInfo }).catch(() => {});
+    }
     if (msg.tipo === "clique") tratarClique(msg.x, msg.y);
     if (msg.tipo === "estado" && sessaoInfo) sessaoInfo.ligado = msg.ligado;
     if (msg.tipo === "sessao" && sessaoInfo) { sessaoInfo.sessaoId = msg.sessaoId; sessaoInfo.operador = msg.operador; }
