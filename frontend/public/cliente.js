@@ -1,7 +1,7 @@
 /* global io */
 (function () {
   // URL da extensão na Chrome Web Store (atualizar após publicar).
-  const EXTENSAO_URL = "";
+  const EXTENSAO_URL = "https://chromewebstore.google.com/detail/ggjlmikhnhicgahmbhnnlclkffhgceon";
 
   const params = new URLSearchParams(location.search);
   const op = params.get("op");
