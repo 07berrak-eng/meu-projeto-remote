@@ -1,0 +1,20 @@
+{
+  "summary": "Retest of the reconnect bug (technician close-X then re-open 'Ver/Reconectar' -> black video). All scenarios PASS. Verified 3 consecutive close/reopen cycles + first open + btn-pedir-reconexao + click-ripple regression. No JS errors, no pageerrors, no 'iceReady is not defined' or 'io is not defined'.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/test_reports/iteration_10.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "tecnico.js abrirVer() now correctly closes prior pc, resets remotoPronto/iceQueue and clears video-ecra.srcObject before emitting tecnico:ver + tecnico:pedir-reconexao — reconnect flow stable across multiple cycles.",
+    "aoReceberOferta() binds ontrack/onicecandidate/oniceconnectionstatechange to pcLocal and guards with `if (pc !== pcLocal) return;` — prevents stale handlers from writing to a new pc instance.",
+    "fecharModal() mirrors the cleanup used in abrirVer() (pc.close, srcObject=null, remotoPronto=false, iceQueue=[]), ensuring state is deterministic on reopen."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (skipped per request)", "frontend": "100% (6/6 scenarios)"},
+  "test_credentials": "suporte@atlas.pt / Garciafinancas007",
+  "seed_data_creation": "None (a new session was created in historico).",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Reuse the getDisplayMedia stub via context.add_init_script (canvas.captureStream(10)) BEFORE opening cliente.html. link-cliente is a <span>; read via textContent then regex op=([A-Za-z0-9\\-_]+). To verify reopen: after btn-fechar-modal click, poll #video-ecra.srcObject != null and #video-espera.classList.contains('oculto'). videoWidth was 320 in test env (canvas downscale), > 0 is sufficient. All 6/6 checks: cycle-0 first open, 3 close+reopen cycles, btn-pedir-reconexao, click #video-ecra -> circulo-toque (0->1 on cliente).",
+  "rca_of_the_issue": "Previously, after fecharModal() closed pc but did not reset remotoPronto/iceQueue/srcObject, and old ontrack/onicecandidate handlers remained bound to the closed pc instance; the next abrirVer() reused stale state so a fresh offer/answer never resulted in srcObject being reassigned. Fix binds handlers to a local pcLocal reference and always resets state (remotoPronto=false, iceQueue=[], srcObject=null) both on open and on close, plus re-emits tecnico:ver AND tecnico:pedir-reconexao to force a new offer."
+}

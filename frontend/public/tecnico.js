@@ -181,6 +181,11 @@
 
   // ---------- Ver ecrã (WebRTC answerer) ----------
   function abrirVer(id) {
+    // limpar qualquer ligação anterior (evita ecrã preto ao reabrir/reconectar)
+    if (pc) { try { pc.close(); } catch (e) {} pc = null; }
+    remotoPronto = false;
+    iceQueue = [];
+    el("video-ecra").srcObject = null;
     sessaoAtiva = id;
     const s = sessoes.find((x) => x.id === id);
     el("modal-titulo").textContent = (s && (s.nome || dispositivo(s.userAgent))) || "Ecrã do cliente";
@@ -188,8 +193,8 @@
     el("espera-txt").textContent = s && s.aPartilhar ? "A ligar ao ecrã do cliente…" : "À espera que o cliente toque em RECONECTAR…";
     el("modal-ver").classList.remove("oculto");
     socket.emit("tecnico:ver", { sessaoId: id });
-    // Se o cliente não está a partilhar, pede-lhe para reconectar (mostra notificação no telemóvel/PC dele)
-    if (!s || !s.aPartilhar) socket.emit("tecnico:pedir-reconexao", { sessaoId: id });
+    // Pede sempre ao cliente uma nova oferta (reconexão limpa), esteja ou não a partilhar
+    socket.emit("tecnico:pedir-reconexao", { sessaoId: id });
   }
 
   function pedirReconexao() {
@@ -208,15 +213,18 @@
       iceQueue = [];
       remotoPronto = false;
       pc = new RTCPeerConnection(rtcConfig);
+      const pcLocal = pc;
       pc.ontrack = (ev) => {
+        if (pc !== pcLocal) return;
         const v = el("video-ecra");
         v.srcObject = ev.streams[0];
         v.play().catch(() => {});
         el("video-espera").classList.add("oculto");
       };
-      pc.onicecandidate = (ev) => { if (ev.candidate) socket.emit("webrtc:ice", { sessaoId: sessaoAtiva, candidate: ev.candidate }); };
+      pc.onicecandidate = (ev) => { if (ev.candidate && pc === pcLocal) socket.emit("webrtc:ice", { sessaoId: sessaoAtiva, candidate: ev.candidate }); };
       pc.oniceconnectionstatechange = () => {
-        const st = pc.iceConnectionState;
+        if (pc !== pcLocal) return;
+        const st = pcLocal.iceConnectionState;
         if (st === "failed" || st === "disconnected") {
           el("espera-txt").textContent = "Ligação instável. A tentar reconectar… peça ao cliente para tocar em COMEÇAR de novo se continuar preto.";
           el("video-espera").classList.remove("oculto");
@@ -277,6 +285,8 @@
   function fecharModal() {
     if (sessaoAtiva) socket.emit("tecnico:parar", { sessaoId: sessaoAtiva });
     if (pc) { try { pc.close(); } catch (e) {} pc = null; }
+    remotoPronto = false;
+    iceQueue = [];
     el("video-ecra").srcObject = null;
     sessaoAtiva = null;
     el("modal-ver").classList.add("oculto");
