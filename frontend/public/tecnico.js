@@ -9,10 +9,8 @@
   let email = null;
   let sessoes = [];
 
-  let pc = null;
-  let sessaoAtiva = null;
-  let iceQueue = [];
-  let remotoPronto = false;
+  let pcs = {};              // sessaoId -> { pc, stream, remotoPronto, iceQueue }
+  let sessaoAtiva = null;    // sessão aberta no modal
   let rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
   const iceReady = fetch(API + "/ice")
     .then((r) => r.json())
@@ -85,10 +83,12 @@
     socket.on("webrtc:offer", aoReceberOferta);
     socket.on("webrtc:ice", async (d) => {
       if (!d.candidate) return;
-      if (pc && remotoPronto) {
-        try { await pc.addIceCandidate(d.candidate); } catch (e) {}
+      const entry = pcs[d.sessaoId];
+      if (!entry) return;
+      if (entry.pc && entry.remotoPronto) {
+        try { await entry.pc.addIceCandidate(d.candidate); } catch (e) {}
       } else {
-        iceQueue.push(d.candidate);
+        entry.iceQueue.push(d.candidate);
       }
     });
   }
@@ -108,6 +108,10 @@
 
   function cartao(s) {
     const nome = s.nome || dispositivo(s.userAgent);
+    const thumb = s.online ? `<div class="thumb-wrap" data-testid="thumb-wrap-${s.id}">
+        <video id="thumb-${s.id}" class="thumb-video" muted autoplay playsinline data-ver="${s.id}" data-testid="thumb-video-${s.id}"></video>
+        <div class="thumb-espera" id="thumb-espera-${s.id}" data-testid="thumb-espera-${s.id}">${s.aPartilhar ? "A ligar ao ecrã…" : "Ligado — sem partilha"}</div>
+      </div>` : "";
     const selos = [
       s.online ? '<span class="selo on">Online</span>' : '<span class="selo off">Offline</span>',
       s.aPartilhar ? '<span class="selo share">A partilhar</span>' : "",
@@ -115,6 +119,7 @@
     return `<div class="cartao-sessao" data-testid="sessao-${s.id}">
       <div class="cab"><span class="${s.online ? "ponto-online" : "ponto-offline"}"></span>
         <span class="nome">${esc(nome)}</span></div>
+      ${thumb}
       <div class="disp">${esc(dispositivo(s.userAgent))} · <span style="opacity:.7">${esc(s.userAgent || "")}</span></div>
       <div class="meta">Início: ${dataFmt(s.inicio)}</div>
       <div class="selos">${selos}</div>
@@ -135,10 +140,11 @@
     el("grelha-hist").innerHTML = hist.map(cartao).join("");
     el("vazio-online").classList.toggle("oculto", online.length > 0);
     el("vazio-hist").classList.toggle("oculto", hist.length > 0);
+    sincronizar();
   }
 
   document.addEventListener("click", async (e) => {
-    const t = e.target.closest("button");
+    const t = e.target.closest("[data-ver],[data-renomear],[data-apagar]");
     if (!t) return;
     if (t.dataset.ver) abrirVer(t.dataset.ver);
     else if (t.dataset.renomear) {
@@ -179,22 +185,70 @@
     } catch (err) { el("senha-msg").style.color = "#ff8a8a"; el("senha-msg").textContent = err.message; }
   });
 
-  // ---------- Ver ecrã (WebRTC answerer) ----------
+  // ---------- Ver ecrã / Miniaturas (WebRTC multi-peer) ----------
+  function conectar(id) {
+    if (pcs[id]) return;
+    pcs[id] = { pc: null, stream: null, remotoPronto: false, iceQueue: [] };
+    socket.emit("tecnico:ver", { sessaoId: id });
+    socket.emit("tecnico:pedir-reconexao", { sessaoId: id });
+  }
+
+  function desconectar(id) {
+    const entry = pcs[id];
+    if (!entry) return;
+    if (entry.pc) { try { entry.pc.close(); } catch (e) {} }
+    delete pcs[id];
+    if (socket) socket.emit("tecnico:parar", { sessaoId: id });
+  }
+
+  function aplicarStream(id) {
+    const entry = pcs[id];
+    if (!entry || !entry.stream) return;
+    const tv = document.getElementById("thumb-" + id);
+    if (tv) {
+      if (tv.srcObject !== entry.stream) { tv.srcObject = entry.stream; tv.play().catch(() => {}); }
+      tv.classList.add("ativa");
+      const esp = document.getElementById("thumb-espera-" + id);
+      if (esp) esp.classList.add("oculto");
+    }
+    if (sessaoAtiva === id) {
+      const v = el("video-ecra");
+      if (v.srcObject !== entry.stream) { v.srcObject = entry.stream; v.play().catch(() => {}); }
+      el("video-espera").classList.add("oculto");
+    }
+  }
+
+  function sincronizar() {
+    if (!socket) return;
+    const porId = {};
+    sessoes.forEach((s) => (porId[s.id] = s));
+    // liga automaticamente às sessões online que estão a partilhar (miniaturas)
+    sessoes.forEach((s) => { if (s.online && s.aPartilhar && !pcs[s.id]) conectar(s.id); });
+    // desliga as que já não se aplicam (exceto a que está aberta no modal)
+    Object.keys(pcs).forEach((id) => {
+      const s = porId[id];
+      const manter = s && s.online && s.aPartilhar;
+      if (!manter && id !== sessaoAtiva) desconectar(id);
+    });
+    // reanexa os streams aos vídeos (o innerHTML foi reconstruído)
+    Object.keys(pcs).forEach((id) => aplicarStream(id));
+  }
+
   function abrirVer(id) {
-    // limpar qualquer ligação anterior (evita ecrã preto ao reabrir/reconectar)
-    if (pc) { try { pc.close(); } catch (e) {} pc = null; }
-    remotoPronto = false;
-    iceQueue = [];
-    el("video-ecra").srcObject = null;
     sessaoAtiva = id;
     const s = sessoes.find((x) => x.id === id);
     el("modal-titulo").textContent = (s && (s.nome || dispositivo(s.userAgent))) || "Ecrã do cliente";
-    el("video-espera").classList.remove("oculto");
-    el("espera-txt").textContent = s && s.aPartilhar ? "A ligar ao ecrã do cliente…" : "À espera que o cliente toque em RECONECTAR…";
     el("modal-ver").classList.remove("oculto");
-    socket.emit("tecnico:ver", { sessaoId: id });
-    // Pede sempre ao cliente uma nova oferta (reconexão limpa), esteja ou não a partilhar
-    socket.emit("tecnico:pedir-reconexao", { sessaoId: id });
+    const entry = pcs[id];
+    if (entry && entry.stream) {
+      el("video-espera").classList.add("oculto");
+      const v = el("video-ecra"); v.srcObject = entry.stream; v.play().catch(() => {});
+    } else {
+      el("video-ecra").srcObject = null;
+      el("video-espera").classList.remove("oculto");
+      el("espera-txt").textContent = s && s.aPartilhar ? "A ligar ao ecrã do cliente…" : "À espera que o cliente toque em COMEÇAR / RECONECTAR…";
+      if (s && s.online) conectar(id);
+    }
   }
 
   function pedirReconexao() {
@@ -206,37 +260,38 @@
   }
 
   async function aoReceberOferta(d) {
-    if (!sessaoAtiva || !d.sdp) return;
+    const id = d && d.sessaoId;
+    if (!id || !d.sdp) return;
+    const entry = pcs[id];
+    if (!entry) return;
     try {
       await iceReady;
-      if (pc) { try { pc.close(); } catch (e) {} }
-      iceQueue = [];
-      remotoPronto = false;
-      pc = new RTCPeerConnection(rtcConfig);
-      const pcLocal = pc;
+      if (entry.pc) { try { entry.pc.close(); } catch (e) {} }
+      entry.iceQueue = [];
+      entry.remotoPronto = false;
+      const pc = new RTCPeerConnection(rtcConfig);
+      entry.pc = pc;
       pc.ontrack = (ev) => {
-        if (pc !== pcLocal) return;
-        const v = el("video-ecra");
-        v.srcObject = ev.streams[0];
-        v.play().catch(() => {});
-        el("video-espera").classList.add("oculto");
+        if (entry.pc !== pc) return;
+        entry.stream = ev.streams[0];
+        aplicarStream(id);
       };
-      pc.onicecandidate = (ev) => { if (ev.candidate && pc === pcLocal) socket.emit("webrtc:ice", { sessaoId: sessaoAtiva, candidate: ev.candidate }); };
+      pc.onicecandidate = (ev) => { if (ev.candidate && entry.pc === pc) socket.emit("webrtc:ice", { sessaoId: id, candidate: ev.candidate }); };
       pc.oniceconnectionstatechange = () => {
-        if (pc !== pcLocal) return;
-        const st = pcLocal.iceConnectionState;
-        if (st === "failed" || st === "disconnected") {
-          el("espera-txt").textContent = "Ligação instável. A tentar reconectar… peça ao cliente para tocar em COMEÇAR de novo se continuar preto.";
+        if (entry.pc !== pc) return;
+        const st = pc.iceConnectionState;
+        if ((st === "failed" || st === "disconnected") && sessaoAtiva === id) {
+          el("espera-txt").textContent = "Ligação instável. A tentar reconectar…";
           el("video-espera").classList.remove("oculto");
         }
       };
       await pc.setRemoteDescription(d.sdp);
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-      remotoPronto = true;
-      for (const c of iceQueue) { try { await pc.addIceCandidate(c); } catch (e) {} }
-      iceQueue = [];
-      socket.emit("webrtc:answer", { sessaoId: sessaoAtiva, sdp: pc.localDescription });
+      entry.remotoPronto = true;
+      for (const c of entry.iceQueue) { try { await pc.addIceCandidate(c); } catch (e) {} }
+      entry.iceQueue = [];
+      socket.emit("webrtc:answer", { sessaoId: id, sdp: pc.localDescription });
     } catch (e) { console.warn(e); }
   }
 
@@ -283,13 +338,13 @@
   });
 
   function fecharModal() {
-    if (sessaoAtiva) socket.emit("tecnico:parar", { sessaoId: sessaoAtiva });
-    if (pc) { try { pc.close(); } catch (e) {} pc = null; }
-    remotoPronto = false;
-    iceQueue = [];
-    el("video-ecra").srcObject = null;
+    const id = sessaoAtiva;
     sessaoAtiva = null;
     el("modal-ver").classList.add("oculto");
+    el("video-ecra").srcObject = null;
+    // manter a ligação viva se ainda serve de miniatura; caso contrário, desligar
+    const s = sessoes.find((x) => x.id === id);
+    if (id && !(s && s.online && s.aPartilhar)) desconectar(id);
   }
   el("btn-fechar-modal").addEventListener("click", fecharModal);
 

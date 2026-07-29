@@ -321,7 +321,7 @@ async def webrtc_offer(sid, data):
     sessao_id = sid_sessao.get(sid)
     if not sessao_id:
         return
-    await sio.emit("webrtc:offer", {"sdp": data.get("sdp")}, room=f"sess:{sessao_id}", skip_sid=sid)
+    await sio.emit("webrtc:offer", {"sdp": data.get("sdp"), "sessaoId": sessao_id}, room=f"sess:{sessao_id}", skip_sid=sid)
 
 
 @sio.on("webrtc:answer")
@@ -345,7 +345,7 @@ async def webrtc_ice(sid, data):
         sessao_id = (data or {}).get("sessaoId")
     if not sessao_id:
         return
-    await sio.emit("webrtc:ice", {"candidate": candidate}, room=f"sess:{sessao_id}", skip_sid=sid)
+    await sio.emit("webrtc:ice", {"candidate": candidate, "sessaoId": sessao_id}, room=f"sess:{sessao_id}", skip_sid=sid)
 
 
 @sio.on("tecnico:clique")

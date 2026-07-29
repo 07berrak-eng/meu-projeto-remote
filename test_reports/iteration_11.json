@@ -1,0 +1,32 @@
+{
+  "summary": "Frontend end-to-end validation of the new LIVE thumbnails feature on the technician panel. All 7 scenarios (login, painel Online+A partilhar, live thumb-video auto-attached with videoWidth>0, click thumb -> modal shows same stream, click video-ecra -> .circulo-toque on cliente, close modal keeps thumb live, btn-ver reopens with stream) PASSED. Screenshots confirm the miniature video renders the client's canvas.captureStream in the online card, and the red circle appears on the client after clicking on video-ecra. Discovered ONE race-condition bug in the backend socket handlers (see backend_issues.critical). With a >=3s wait between page-load and clicking 'começar', all scenarios are 100% stable.",
+  "backend_issues": {
+    "critical": [
+      {"endpoint": "socket.io cliente:partilhar / cliente:hello", "issue": "Race condition: python-socketio dispatches async event handlers concurrently, so 'cliente:partilhar' can be processed BEFORE 'cliente:hello' has populated sid_sessao[sid]. When that happens sid_sessao.get(sid) returns None and the handler exits without updating aPartilhar, so the session stays with aPartilhar=false in Mongo and the technician panel never shows the 'A partilhar' badge nor auto-starts the miniatura. Reproduced deterministically by clicking #btn-comecar in cliente within ~1s of page load; a 3–4s wait always works. Logged with a temporary print: '[DEBUG] cliente:partilhar sid=... sessao_id=None data={ativo:True}'. Recommend one of: (a) serialize per-sid events (asyncio.Lock keyed by sid), (b) in cliente:partilhar, if sid_sessao is empty, wait up-to-N ms polling for it before returning, or (c) on the client side, only emit cliente:partilhar AFTER receiving 'cliente:sessao' (queue it).", "priority": "HIGH"}
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_11.json"],
+  "action_items": [
+    "Fix the cliente:hello vs cliente:partilhar race in backend/server.py so aPartilhar is reliably set to true even when the client emits partilhar quickly after connecting. Suggested minimal patch (client-side): move the socket.emit('cliente:partilhar',{ativo:true}) inside a helper that waits for sessaoPronta===true before emitting; or gate it behind the existing 'cliente:sessao' handshake. Alternative (server-side): if sid_sessao.get(sid) is None inside cliente_partilhar, retry 3x with 100ms sleep before dropping the event."
+  ],
+  "critical_code_review_comments": [
+    "backend/server.py cliente_partilhar drops the event silently when sid_sessao is not yet populated — no log, no retry, no ack. This is the root cause of the intermittent 'A partilhar' badge / miniatura never activating. Please add either serialization or a small wait/retry.",
+    "cliente.js emits cliente:partilhar directly after mostrar(telaAtivo). It does not wait for 'cliente:sessao' (which is what actually confirms the backend sid->sessao mapping was written). Waiting for sessaoPronta before emitting would fix the race on the client side without touching the backend.",
+    "tecnico.js sincronizar()/aplicarStream() correctly re-attaches streams after render() re-creates the DOM, and the multi-peer pcs map keyed by sessaoId is clean. Verified thumb persists after modal close (miniatura stays live) — good.",
+    "Multiple duplicate 'cliente:partilhar' events observed for the same sid (2 back-to-back). Not harmful but indicates the on('connect') branch in cliente.js may re-fire (transport upgrade). Consider debouncing or emitting only when the ativo state actually changes."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (frontend-only per request; race-condition bug discovered via logs)", "frontend": "100% (7/7 scenarios, with a 3-4s wait after cliente page load; 0% first-click within 1s due to backend race)"},
+  "test_credentials": "Técnico: suporte@atlas.pt / Garciafinancas007  |  Cliente: /cliente.html?op=7b6078d21a",
+  "seed_data_creation": "Several TEST sessions created in db.sessoes during runs (all left in history; can be cleaned via 'Limpar tudo').",
+  "should_call_test_agent_after_fix": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Stub navigator.mediaDevices.getDisplayMedia via context.add_init_script BEFORE opening /cliente.html (canvas.captureStream(10) works; videoWidth ends up 320 in headless — >0 is the correct assertion). CRITICAL: wait 3-4 seconds after cliente page loads BEFORE clicking #btn-comecar, otherwise the backend race causes aPartilhar to stay false. Selectors used and verified: #grelha-online .cartao-sessao, [data-testid='thumb-video-<id>'], [data-testid='btn-ver-<id>'], [data-testid='modal-ver'] (has .oculto class when hidden — do NOT use wait_for_selector state=visible for closed check; instead poll classList.contains('oculto')), [data-testid='video-ecra'], [data-testid='btn-fechar-modal']. Click circle on cliente asserted via document.querySelectorAll('.circulo-toque').length increment.",
+  "rca_of_the_issue": "python-socketio (async_mode='asgi') schedules each incoming event as an independent asyncio.Task without per-sid serialization. cliente.js emits 'cliente:hello' inside on('connect') and, moments later, calls comecar() which emits 'cliente:partilhar'. When both events reach the backend close together, the partilhar handler executes concurrently with hello and reaches `sid_sessao.get(sid)` before hello has assigned `sid_sessao[sid] = sessao['id']`. Because the handler short-circuits on missing sessao_id, the aPartilhar flag is never persisted, `sessoes:atualizar` still carries aPartilhar=false, and the technician UI never invokes conectar() -> the live thumbnail feature silently fails. Confirmed with debug logging: `cliente:partilhar sid=... sessao_id=None`."
+}

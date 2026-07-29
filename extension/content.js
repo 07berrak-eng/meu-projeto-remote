@@ -43,15 +43,20 @@
     setTimeout(() => c.remove(), 1500);
   }
 
-  // Converte % do ecrã inteiro -> posição no viewport desta aba
+  // Converte % do ecrã inteiro -> posição no viewport desta aba.
+  // Requer que o cliente esteja a partilhar o ECRÃ INTEIRO.
   function mapear(xPct, yPct) {
     const sx = (xPct / 100) * screen.width;
     const sy = (yPct / 100) * screen.height;
-    const chromeH = Math.max(0, window.outerHeight - window.innerHeight);
-    const chromeW = Math.max(0, window.outerWidth - window.innerWidth);
-    const vx = sx - window.screenX - chromeW;
-    const vy = sy - window.screenY - chromeH;
-    const dentro = vx >= 0 && vy >= 0 && vx <= window.innerWidth && vy <= window.innerHeight;
+    // Topo do viewport no ecrã = posição da janela + altura do "chrome" (abas/barra de endereço).
+    const chromeTop = Math.max(0, window.outerHeight - window.innerHeight);
+    const vpLeft = window.screenX;
+    const vpTop = window.screenY + chromeTop;
+    const vx = sx - vpLeft;
+    const vy = sy - vpTop;
+    const margem = 2;
+    const dentro = vx >= -margem && vy >= -margem
+      && vx <= window.innerWidth + margem && vy <= window.innerHeight + margem;
     return { dentro, vx, vy };
   }
 

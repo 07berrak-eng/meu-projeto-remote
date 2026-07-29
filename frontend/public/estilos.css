@@ -300,6 +300,15 @@ input:focus { outline: none; border-color: var(--verde); }
 .acoes .apagar:hover { border-color: var(--vermelho); color:#ff9a9a; }
 .acoes button:hover { transform: translateY(-1px); }
 
+/* Miniatura ao vivo no cartão de sessão */
+.thumb-wrap { position: relative; width: 100%; aspect-ratio: 16 / 10; margin: 10px 0 6px;
+  background: #0c151b; border: 1px solid var(--linha); border-radius: 12px; overflow: hidden; cursor: pointer; }
+.thumb-wrap:hover { border-color: rgba(52,168,83,.5); }
+.thumb-video { width: 100%; height: 100%; object-fit: contain; display: block; background: #0c151b; }
+.thumb-espera { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  text-align: center; padding: 10px; font-size: .78rem; color: var(--suave); }
+.thumb-espera.oculto { display: none; }
+
 .vazio { color: var(--suave); padding: 30px; text-align:center; border:1px dashed var(--linha); border-radius:14px; }
 .barra-acoes { display:flex; justify-content:flex-end; margin-bottom: 10px; }
 .btn-limpar { background: transparent; color:#ff9a9a; border:1px solid rgba(226,59,59,.35); padding:9px 16px; border-radius:10px; font-weight:600; }
