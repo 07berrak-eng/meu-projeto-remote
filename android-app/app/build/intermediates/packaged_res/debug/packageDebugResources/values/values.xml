@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="atlas_bg">#E8F1E6</color>
+    <color name="atlas_green">#1F7A3D</color>
+    <color name="atlas_green_light">#34A853</color>
+    <color name="text_dark">#14261A</color>
+    <color name="text_soft">#4F6A58</color>
+    <color name="white">#FFFFFF</color>
+    <string name="app_name">Suporte Atlas</string>
+    <style name="Theme.AtlasSuporte" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/atlas_green</item>
+        <item name="colorPrimaryContainer">@color/atlas_green_light</item>
+        <item name="android:statusBarColor">@color/atlas_green</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

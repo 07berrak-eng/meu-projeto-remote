@@ -58,3 +58,11 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - `sw.js`: cache incrementado para `atlas-pwa-v2` (força atualização do cliente.js/CSS em cache nos dispositivos após redeploy).
 - Testado no preview (stub de getDisplayMedia): cenário sucesso → ecrã "Suporte ativo"; cenário indisponível → ecrã "Abrir no Chrome" com link correto.
 - NOTA: para captura 100% garantida DENTRO da app instalada seria necessária uma app Android NATIVA (MediaProjection) — declinado pelo utilizador por agora; o recurso ao Chrome garante que a partilha funciona sempre.
+
+## App Android NATIVA (Kotlin + MediaProjection + WebRTC) (2026-07-29c)
+- Projeto em `/app/android-app` (Kotlin, AGP 8.5.2, Gradle 8.7, compileSdk 34, minSdk 24). Package `pt.atlas.suporte`.
+- Captura o ECRÃ INTEIRO do Android via MediaProjection (foreground service) e transmite por WebRTC para o servidor de produção. Sinalização Socket.io compatível com o cliente web (mesmos eventos e formato de SDP/ICE).
+- UI: cola-se o link de suporte (`?op=<linkId>`) e toca-se em "PARTILHAR ECRÃ" → pedido do sistema Android → transmite.
+- **APK compilado DENTRO do pod**: host é aarch64 mas o aapt2 do SDK é x86_64 → corre via QEMU (qemu-x86_64-static + sysroot glibc x86_64). Tudo cacheado em `/root/android-build`. Script: `/root/build_apk.sh`.
+- APK final: `/app/frontend/public/atlas-suporte.apk` (≈47,5 MB) — download preview: `{preview}/atlas-suporte.apk`; produção após redeploy: `https://remote-assist-21.emergent.host/atlas-suporte.apk`.
+- Estado: COMPILA com sucesso; NÃO testado em dispositivo real (não há emulador aqui). Aguarda teste do utilizador.
