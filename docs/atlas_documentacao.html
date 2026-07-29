@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8" />
+<style>
+  @page { size: A4; margin: 22mm 16mm 20mm 16mm;
+    @bottom-center { content: "Atlas — Suporte Técnico Remoto  ·  Documentação Técnica e Funcional"; font-size: 8px; color: #7d8f9c; }
+    @bottom-right { content: "Pág. " counter(page) " / " counter(pages); font-size: 8px; color: #7d8f9c; }
+  }
+  * { box-sizing: border-box; }
+  body { font-family: "Helvetica Neue", Arial, sans-serif; color: #1c2b22; font-size: 10.5px; line-height: 1.55; }
+  h1, h2, h3 { color: #1f7a3d; font-weight: 700; line-height: 1.2; }
+  h1 { font-size: 21px; margin: 26px 0 6px; border-bottom: 3px solid #34a853; padding-bottom: 6px; }
+  h2 { font-size: 15px; margin: 20px 0 6px; }
+  h3 { font-size: 12px; margin: 14px 0 4px; color: #16301f; }
+  p { margin: 5px 0; }
+  ul, ol { margin: 5px 0 5px 16px; padding: 0; }
+  li { margin: 2px 0; }
+  code, .mono { font-family: "Courier New", monospace; background: #eef6ea; color: #17472a; padding: 1px 4px; border-radius: 4px; font-size: 9.5px; }
+  pre { background: #0e161d; color: #d6efdc; padding: 10px 12px; border-radius: 8px; font-family: "Courier New", monospace; font-size: 9px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 9.3px; }
+  th, td { border: 1px solid #cfe0d3; padding: 5px 7px; text-align: left; vertical-align: top; }
+  th { background: #1f7a3d; color: #fff; font-weight: 700; }
+  tr:nth-child(even) td { background: #f2f8f0; }
+  .tag { display: inline-block; background: #e2f0da; color: #1f7a3d; border: 1px solid #cfe6c4; border-radius: 999px; padding: 1px 8px; font-size: 8.5px; font-weight: 700; }
+  .nota { background: #fff8e6; border-left: 4px solid #e0a800; padding: 8px 12px; border-radius: 6px; margin: 8px 0; }
+  .aviso { background: #fdecec; border-left: 4px solid #d64545; padding: 8px 12px; border-radius: 6px; margin: 8px 0; }
+  .ok { background: #eef6ea; border-left: 4px solid #34a853; padding: 8px 12px; border-radius: 6px; margin: 8px 0; }
+
+  .capa { text-align: center; padding-top: 150px; page-break-after: always; }
+  .capa .logo { width: 92px; height: 92px; border-radius: 22px; background: linear-gradient(135deg,#1f7a3d,#34a853); margin: 0 auto 22px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 46px; font-weight: 800; }
+  .capa h1 { font-size: 40px; border: 0; color: #16301f; margin: 0; }
+  .capa .sub { font-size: 15px; color: #47624f; margin-top: 8px; }
+  .capa .meta { margin-top: 40px; font-size: 11px; color: #7d8f9c; }
+  .toc { page-break-after: always; }
+  .toc ol { font-size: 11.5px; line-height: 2; }
+  .sec { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<!-- CAPA -->
+<div class="capa">
+  <div class="logo">A</div>
+  <h1>ATLAS</h1>
+  <div class="sub">Sistema de Suporte Técnico Remoto Multi‑Operador (Co‑browsing)</div>
+  <div class="sub" style="font-size:12px;margin-top:20px;">Documentação Técnica e Funcional Completa</div>
+  <div class="meta">
+    Versão do documento: 1.0 &nbsp;·&nbsp; Junho/Julho de 2026<br/>
+    Criado por: Victor Silva &amp; Pedro Cabral<br/>
+    Produção: https://remote-assist-21.emergent.host
+  </div>
+</div>
+
+<!-- ÍNDICE -->
+<div class="toc">
+  <h1>Índice</h1>
+  <ol>
+    <li>Visão geral do produto</li>
+    <li>Personas e casos de uso</li>
+    <li>Arquitetura técnica</li>
+    <li>Fluxo de funcionamento (passo a passo)</li>
+    <li>Partilha de ecrã e co‑browsing (WebRTC)</li>
+    <li>Miniaturas ao vivo no painel do técnico</li>
+    <li>Aplicação Android instalável (PWA)</li>
+    <li>Extensão Chrome (controlo avançado)</li>
+    <li>Autenticação e segurança</li>
+    <li>Modelo de dados (MongoDB)</li>
+    <li>API REST</li>
+    <li>Eventos Socket.io</li>
+    <li>Servidores STUN / TURN</li>
+    <li>Estrutura de ficheiros</li>
+    <li>Ambientes e deployment</li>
+    <li>Limitações conhecidas</li>
+    <li>Prompt completo de recriação do sistema</li>
+  </ol>
+</div>
+
+<!-- 1 -->
+<div class="sec">
+<h1>1. Visão geral do produto</h1>
+<p><strong>Atlas</strong> é um sistema web de <strong>suporte técnico remoto</strong> pensado para clientes leigos. O cliente abre um link, toca em <span class="mono">COMEÇAR</span> e partilha o seu ecrã em tempo real. O técnico vê o ecrã do cliente através de um painel (CRM) e orienta‑o com um <strong>círculo vermelho</strong> que replica os cliques do técnico no ecrã do cliente (co‑browsing).</p>
+<p>Cada técnico/operador tem o seu próprio link e o seu próprio CRM isolado. O sistema é totalmente transparente: o cliente vê sempre os avisos de autorização do sistema operativo e pode parar a partilha a qualquer momento.</p>
+<h3>Princípios de conceção</h3>
+<ul>
+  <li><span class="tag">Simplicidade</span> Para o cliente: um único botão grande. Sem instalação obrigatória, sem registo.</li>
+  <li><span class="tag">Isolamento</span> Multi‑operador: cada operador só vê as suas sessões (identificadas por <span class="mono">linkId</span>).</li>
+  <li><span class="tag">Tempo real</span> Sinalização e co‑browsing via Socket.io; vídeo via WebRTC.</li>
+  <li><span class="tag">Transparência</span> O cliente controla o que partilha e vê sempre o pedido de autorização.</li>
+</ul>
+</div>
+
+<!-- 2 -->
+<div class="sec">
+<h1>2. Personas e casos de uso</h1>
+<table>
+  <tr><th>Persona</th><th>Dispositivo</th><th>Objetivo</th></tr>
+  <tr><td>Cliente leigo</td><td>Telemóvel/PC (mobile‑first)</td><td>Receber ajuda: partilhar o ecrã e seguir o círculo vermelho do técnico.</td></tr>
+  <tr><td>Técnico / Operador</td><td>Desktop</td><td>Ver o ecrã do cliente, orientar com cliques, gerir sessões no CRM.</td></tr>
+  <tr><td>Administrador</td><td>Desktop</td><td>Conta com o mesmo painel; gestão das próprias sessões.</td></tr>
+</table>
+<h3>Casos de uso típicos</h3>
+<ul>
+  <li>Ajudar um cliente a configurar uma app, preencher um formulário ou resolver um erro no ecrã.</li>
+  <li>Orientar passo a passo indicando onde tocar (círculo vermelho).</li>
+  <li>Manter um histórico de acessos por operador (renomear/apagar sessões).</li>
+</ul>
+</div>
+
+<!-- 3 -->
+<div class="sec">
+<h1>3. Arquitetura técnica</h1>
+<table>
+  <tr><th>Camada</th><th>Tecnologia</th><th>Detalhe</th></tr>
+  <tr><td>Backend</td><td>FastAPI + python‑socketio (ASGI)</td><td>Porta 8001; rotas REST sob <span class="mono">/api</span>; Socket.io em <span class="mono">/api/socketio</span>.</td></tr>
+  <tr><td>Base de dados</td><td>MongoDB</td><td>Coleções <span class="mono">sessoes</span> e <span class="mono">utilizadores</span>.</td></tr>
+  <tr><td>Autenticação</td><td>JWT + bcrypt</td><td>Apenas para técnicos; contas semeadas a partir do <span class="mono">.env</span>.</td></tr>
+  <tr><td>Frontend</td><td>HTML/CSS/JS puro</td><td>Servido de <span class="mono">frontend/public/</span> (mesma origem).</td></tr>
+  <tr><td>Vídeo</td><td>WebRTC</td><td>Cliente = offerer, técnico = answerer; STUN Google + TURN Metered.</td></tr>
+  <tr><td>App móvel</td><td>PWA</td><td>Manifest + service worker; instalável no Android.</td></tr>
+  <tr><td>Controlo avançado</td><td>Extensão Chrome (MV3)</td><td>Círculo e cliques reais em qualquer separador do navegador.</td></tr>
+</table>
+<h3>Diagrama lógico</h3>
+<pre>
+   CLIENTE (cliente.html / PWA)                    TÉCNICO (tecnico.html / CRM)
+   ┌───────────────────────────┐                  ┌───────────────────────────┐
+   │ getDisplayMedia (ecrã)     │                  │ Login JWT                  │
+   │ RTCPeerConnection (offer)  │                  │ RTCPeerConnection (answer) │
+   │ Socket.io  ────────────────┼───┐          ┌───┼──────────── Socket.io      │
+   └───────────────────────────┘   │          │   └───────────────────────────┘
+                                    ▼          ▼
+                        ┌────────────────────────────────────┐
+                        │  BACKEND FastAPI + python‑socketio   │
+                        │  /api/*  (REST)  ·  /api/socketio    │
+                        │  Salas: op:{email}  ·  sess:{id}     │
+                        └───────────────┬──────────────────────┘
+                                        ▼
+                                 ┌─────────────┐
+                                 │  MongoDB     │
+                                 │ sessoes /    │
+                                 │ utilizadores │
+                                 └─────────────┘
+</pre>
+</div>
+
+<!-- 4 -->
+<div class="sec">
+<h1>4. Fluxo de funcionamento (passo a passo)</h1>
+<ol>
+  <li>O técnico entra em <span class="mono">/tecnico.html</span>, faz login (JWT) e obtém o seu <span class="mono">linkId</span>.</li>
+  <li>O técnico partilha o link <span class="mono">/cliente.html?op=&lt;linkId&gt;</span> com o cliente.</li>
+  <li>O cliente abre o link. O socket liga‑se e emite <span class="mono">cliente:hello</span> (op + token + userAgent).</li>
+  <li>O backend cria/recupera a sessão, responde <span class="mono">cliente:sessao</span> (id + token persistido em localStorage) e atualiza o CRM do operador (<span class="mono">sessoes:atualizar</span>).</li>
+  <li>O cliente toca em <span class="mono">COMEÇAR</span> → <span class="mono">getDisplayMedia</span> (pede autorização do SO) → emite <span class="mono">cliente:partilhar {ativo:true}</span>.</li>
+  <li>O técnico vê o cliente “Online / A partilhar”. A ligação WebRTC é estabelecida: cliente cria a <em>offer</em>, o técnico responde com a <em>answer</em>; trocam candidatos ICE.</li>
+  <li>O técnico clica no vídeo → emite <span class="mono">tecnico:clique {x%, y%}</span> → o cliente desenha o círculo vermelho e simula o toque no ponto correspondente.</li>
+  <li>O cliente pode parar a partilha a qualquer momento; o técnico pode pedir reconexão.</li>
+</ol>
+</div>
+
+<!-- 5 -->
+<div class="sec">
+<h1>5. Partilha de ecrã e co‑browsing (WebRTC)</h1>
+<h3>Sinalização</h3>
+<p>A negociação WebRTC é reencaminhada pelo Socket.io usando a sala <span class="mono">sess:{id}</span>. O cliente é sempre o <em>offerer</em> e o técnico o <em>answerer</em>. Os candidatos ICE são colocados numa fila (queue) até a descrição remota estar pronta, evitando o problema do “ecrã preto”.</p>
+<h3>Mapeamento de cliques (aware de letterbox)</h3>
+<p>Como o vídeo usa <span class="mono">object‑fit: contain</span>, existem barras pretas. O técnico converte a posição do clique em percentagem <strong>relativa ao conteúdo do vídeo</strong> (ignorando as barras). O cliente reconverte a percentagem em píxeis do seu ecrã e dispara eventos <span class="mono">pointer/mouse/click</span> via <span class="mono">elementFromPoint</span>.</p>
+<h3>Robustez</h3>
+<ul>
+  <li>Fila de ICE + <span class="mono">video.play()</span> forçado para evitar ecrã preto.</li>
+  <li><strong>Screen Wake Lock API</strong> para impedir que o ecrã do cliente adormeça durante a partilha.</li>
+  <li>Deteção de partilha interrompida → ecrã “Reconectar?” com vibração.</li>
+  <li>Correção de corrida <span class="mono">cliente:hello</span> vs <span class="mono">cliente:partilhar</span> (retry no servidor + gating no cliente).</li>
+</ul>
+</div>
+
+<!-- 6 -->
+<div class="sec">
+<h1>6. Miniaturas ao vivo no painel do técnico</h1>
+<p>Assim que o painel abre, o técnico liga‑se <strong>automaticamente</strong> a todos os clientes online que estão a partilhar e mostra a tela ao vivo dentro de cada cartão de sessão — <em>antes</em> de clicar em “Ver/Reconectar”.</p>
+<ul>
+  <li>Arquitetura <strong>multi‑peer</strong>: um mapa <span class="mono">pcs[sessaoId]</span> com uma <span class="mono">RTCPeerConnection</span> por sessão.</li>
+  <li>O backend inclui o <span class="mono">sessaoId</span> nas mensagens <span class="mono">webrtc:offer</span> e <span class="mono">webrtc:ice</span> para o técnico encaminhar cada fluxo para o vídeo correto.</li>
+  <li>Clicar na miniatura ou em “Ver/Reconectar” abre o modal <strong>reutilizando o mesmo stream</strong> (sem nova negociação).</li>
+  <li>Fechar o modal mantém a miniatura ativa enquanto o cliente continuar a partilhar.</li>
+</ul>
+</div>
+
+<!-- 7 -->
+<div class="sec">
+<h1>7. Aplicação Android instalável (PWA)</h1>
+<p>A página do cliente é uma <strong>PWA</strong> instalável no Android, com o visual Atlas, ícone próprio e ecrã de arranque (splash).</p>
+<ul>
+  <li><span class="mono">manifest.webmanifest</span>: nome “Suporte Atlas”, <span class="mono">display: standalone</span>, ícones 192/512 + <em>maskable</em>, cores de fundo/tema.</li>
+  <li><span class="mono">sw.js</span>: service worker mínimo (network‑first na navegação; <strong>nunca</strong> interceta <span class="mono">/api</span> nem o Socket.io).</li>
+  <li>Botão <strong>“📲 Instalar aplicação”</strong> que surge via <span class="mono">beforeinstallprompt</span>.</li>
+  <li>O <span class="mono">op</span> do operador é guardado em <span class="mono">localStorage</span> (<span class="mono">atlas_last_op</span>): a app instalada arranca em <span class="mono">/cliente.html</span> e recupera o operador.</li>
+</ul>
+<div class="ok"><strong>Partilha no Android:</strong> no Chrome Android, ao tocar em COMEÇAR o telemóvel pede para partilhar o <strong>ecrã inteiro</strong> — o técnico consegue ver todas as apps.</div>
+<div class="aviso"><strong>Limitação da web no Android:</strong> o círculo vermelho/cliques só funcionam dentro da própria app de suporte (a web não pode desenhar sobre outras apps).</div>
+</div>
+
+<!-- 8 -->
+<div class="sec">
+<h1>8. Extensão Chrome (controlo avançado)</h1>
+<p>Extensão <strong>Manifest V3</strong> que permite mostrar o círculo do técnico e simular cliques <strong>reais</strong> em qualquer separador do navegador do cliente (não apenas na página de suporte).</p>
+<table>
+  <tr><th>Componente</th><th>Função</th></tr>
+  <tr><td><span class="mono">offscreen.html/js</span></td><td>Mantém a ligação Socket.io viva (o service worker MV3 adormece).</td></tr>
+  <tr><td><span class="mono">background.js</span></td><td>Recebe os cliques e executa cliques reais via <span class="mono">chrome.debugger</span> (Input.dispatchMouseEvent).</td></tr>
+  <tr><td><span class="mono">content.js</span></td><td>Injetado em todos os sites: lê a sessão da página do cliente e desenha o círculo; mapeia % do ecrã → viewport da aba.</td></tr>
+  <tr><td><span class="mono">popup.html/js</span></td><td>Mostra o estado da ligação ao técnico.</td></tr>
+</table>
+<div class="aviso"><strong>Requisito:</strong> o cliente deve partilhar o <strong>ecrã inteiro</strong> para o mapeamento de coordenadas funcionar. A extensão não consegue clicar em apps nativas do SO (só dentro do navegador).</div>
+</div>
+
+<!-- 9 -->
+<div class="sec">
+<h1>9. Autenticação e segurança</h1>
+<ul>
+  <li><strong>JWT</strong> emitido no login; validado em cada pedido protegido (<span class="mono">Authorization: Bearer</span>).</li>
+  <li>Palavras‑passe com <strong>bcrypt</strong>. As contas são semeadas a partir do <span class="mono">.env</span> no arranque, com reposição de password caso divergente.</li>
+  <li>Isolamento por operador: cada consulta/ação valida que a sessão pertence ao operador autenticado.</li>
+  <li>O cliente <strong>não</strong> tem login; a sessão é identificada por um <span class="mono">token</span> aleatório persistido no dispositivo.</li>
+</ul>
+<div class="nota"><strong>Boas práticas futuras (P2):</strong> rate‑limiting / anti‑força‑bruta, rotação do <span class="mono">JWT_SECRET</span>, CORS restrito, consentimento explícito RGPD.</div>
+</div>
+
+<!-- 10 -->
+<div class="sec">
+<h1>10. Modelo de dados (MongoDB)</h1>
+<h3>Coleção <span class="mono">sessoes</span></h3>
+<table>
+  <tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr>
+  <tr><td>id</td><td>string (uuid)</td><td>Identificador da sessão.</td></tr>
+  <tr><td>token</td><td>string (uuid)</td><td>Token do cliente (persistido no dispositivo).</td></tr>
+  <tr><td>operador</td><td>string (email)</td><td>Operador dono da sessão.</td></tr>
+  <tr><td>nome</td><td>string</td><td>Nome amigável (só o técnico vê).</td></tr>
+  <tr><td>userAgent</td><td>string</td><td>Dispositivo/navegador do cliente.</td></tr>
+  <tr><td>inicio / ultimaAtividade</td><td>ISO datetime</td><td>Timestamps.</td></tr>
+  <tr><td>online / aPartilhar</td><td>bool</td><td>Estado em tempo real.</td></tr>
+  <tr><td>modo</td><td>string</td><td>“ecra”.</td></tr>
+  <tr><td>sid</td><td>string</td><td>Socket atual do cliente.</td></tr>
+</table>
+<h3>Coleção <span class="mono">utilizadores</span></h3>
+<table>
+  <tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr>
+  <tr><td>email</td><td>string</td><td>Único; identificador de login.</td></tr>
+  <tr><td>senha_hash</td><td>string (bcrypt)</td><td>Hash da palavra‑passe.</td></tr>
+  <tr><td>linkId</td><td>string</td><td>Identificador do link público do operador.</td></tr>
+  <tr><td>criado</td><td>ISO datetime</td><td>Data de criação.</td></tr>
+</table>
+</div>
+
+<!-- 11 -->
+<div class="sec">
+<h1>11. API REST</h1>
+<table>
+  <tr><th>Método</th><th>Rota</th><th>Descrição</th></tr>
+  <tr><td>GET</td><td>/api/</td><td>Health/identificação da app.</td></tr>
+  <tr><td>GET</td><td>/api/ice</td><td>Devolve os servidores STUN/TURN para o WebRTC.</td></tr>
+  <tr><td>POST</td><td>/api/auth/login</td><td>Login; devolve token JWT, email e linkId.</td></tr>
+  <tr><td>GET</td><td>/api/auth/me</td><td>Valida o token e devolve o utilizador.</td></tr>
+  <tr><td>POST</td><td>/api/auth/senha</td><td>Altera a própria palavra‑passe.</td></tr>
+  <tr><td>GET</td><td>/api/sessoes</td><td>Lista as sessões do operador.</td></tr>
+  <tr><td>PATCH</td><td>/api/sessoes/{id}</td><td>Renomeia uma sessão.</td></tr>
+  <tr><td>DELETE</td><td>/api/sessoes/{id}</td><td>Apaga uma sessão.</td></tr>
+  <tr><td>DELETE</td><td>/api/sessoes</td><td>Apaga todas as sessões do operador.</td></tr>
+</table>
+</div>
+
+<!-- 12 -->
+<div class="sec">
+<h1>12. Eventos Socket.io (/api/socketio)</h1>
+<table>
+  <tr><th>Evento</th><th>Origem → Destino</th><th>Descrição</th></tr>
+  <tr><td>cliente:hello</td><td>Cliente → Servidor</td><td>Regista/recupera a sessão (op, token, userAgent).</td></tr>
+  <tr><td>cliente:sessao</td><td>Servidor → Cliente</td><td>Devolve id + token da sessão.</td></tr>
+  <tr><td>cliente:partilhar</td><td>Cliente → Servidor</td><td>Atualiza o estado aPartilhar (true/false).</td></tr>
+  <tr><td>sessoes:atualizar</td><td>Servidor → Técnico</td><td>Envia a lista de sessões do operador (sala op:{email}).</td></tr>
+  <tr><td>tecnico:ver</td><td>Técnico → Servidor</td><td>Entra na sala sess:{id} e avisa o cliente (tecnico:pronto).</td></tr>
+  <tr><td>tecnico:pronto</td><td>Servidor → Cliente</td><td>O técnico está pronto; o cliente cria a offer.</td></tr>
+  <tr><td>tecnico:pedir-reconexao</td><td>Técnico → Cliente</td><td>Pede ao cliente para retomar a partilha.</td></tr>
+  <tr><td>webrtc:offer / answer / ice</td><td>Cliente ↔ Técnico</td><td>Sinalização WebRTC (com sessaoId).</td></tr>
+  <tr><td>tecnico:clique</td><td>Técnico → Cliente/Extensão</td><td>Coordenadas (x%, y%) do círculo/toque.</td></tr>
+  <tr><td>extensao:hello / ok / erro</td><td>Extensão ↔ Servidor</td><td>Liga a extensão à sessão pelo token.</td></tr>
+</table>
+</div>
+
+<!-- 13 -->
+<div class="sec">
+<h1>13. Servidores STUN / TURN</h1>
+<p>O endpoint <span class="mono">/api/ice</span> lê os servidores do <span class="mono">.env</span> e devolve‑os ao frontend. O STUN (Google) chega para redes simples; o <strong>TURN (Metered)</strong> é essencial para ligações entre redes/NAT restritivos (evita o ecrã preto em produção).</p>
+<table>
+  <tr><th>Variável (.env)</th><th>Exemplo</th></tr>
+  <tr><td>STUN_URLS</td><td>stun:stun.l.google.com:19302, stun:stun.relay.metered.ca:80</td></tr>
+  <tr><td>TURN_URLS</td><td>turn:global.relay.metered.ca:80, ...:443, turns:...:443?transport=tcp</td></tr>
+  <tr><td>TURN_USERNAME / TURN_CREDENTIAL</td><td>credenciais Metered</td></tr>
+</table>
+<div class="nota">Alterações às credenciais TURN só chegam à produção após <strong>redeploy</strong>.</div>
+</div>
+
+<!-- 14 -->
+<div class="sec">
+<h1>14. Estrutura de ficheiros</h1>
+<pre>
+/app
+├── backend/
+│   ├── server.py            # FastAPI + Socket.io (REST /api, sinalização, seeding)
+│   ├── requirements.txt
+│   └── .env                 # MONGO_URL, JWT_SECRET, contas, STUN/TURN
+├── frontend/public/
+│   ├── index.html           # redireciona para /tecnico.html
+│   ├── cliente.html/.js      # cliente (WebRTC offerer + PWA)
+│   ├── tecnico.html/.js      # CRM (WebRTC answerer + miniaturas)
+│   ├── estilos.css
+│   ├── manifest.webmanifest  # PWA
+│   ├── sw.js                 # service worker
+│   ├── icons/                # ícones da PWA
+│   └── privacidade.html
+└── extension/               # Extensão Chrome MV3
+    ├── manifest.json, background.js, content.js
+    ├── offscreen.html/js, popup.html/js
+    └── icons/, lib/socket.io.min.js
+</pre>
+</div>
+
+<!-- 15 -->
+<div class="sec">
+<h1>15. Ambientes e deployment</h1>
+<ul>
+  <li><strong>Preview (dev):</strong> ambiente de desenvolvimento e testes.</li>
+  <li><strong>Produção:</strong> https://remote-assist-21.emergent.host</li>
+</ul>
+<p>Alterações a <span class="mono">.env</span> (ex.: TURN) ou novas contas só chegam à produção após um <strong>redeploy</strong>. A extensão Chrome exige reinstalação/republicação para atualizar.</p>
+</div>
+
+<!-- 16 -->
+<div class="sec">
+<h1>16. Limitações conhecidas</h1>
+<ul>
+  <li><strong>iOS/Safari:</strong> não suporta partilha de ecrã por web (comunicado ao cliente).</li>
+  <li><strong>Apps de bancos:</strong> muitas apps protegem o ecrã e aparecem a preto na captura.</li>
+  <li><strong>Círculo/cliques na web:</strong> só funcionam dentro da própria página/PWA; para outros separadores é necessária a extensão Chrome; nunca sobre apps nativas do SO.</li>
+  <li><strong>TURN:</strong> imprescindível entre redes diferentes; requer credenciais válidas em produção.</li>
+</ul>
+</div>
+
+<!-- 17 -->
+<div class="sec">
+<h1>17. Prompt completo de recriação do sistema</h1>
+<p>Texto pronto a usar (por exemplo com um agente de IA) para reconstruir o Atlas de raiz:</p>
+<pre>
+Cria um sistema web de suporte técnico remoto multi‑operador chamado "Atlas"
+para clientes leigos, com co‑browsing.
+
+OBJETIVO
+O cliente abre um link, toca em "COMEÇAR" e partilha o ecrã em tempo real (WebRTC).
+O técnico vê o ecrã num painel (CRM) e orienta o cliente com um círculo vermelho
+que replica os cliques do técnico no ecrã do cliente. Cada operador tem link e CRM
+isolados. Transparência total: o cliente vê os avisos de autorização e pode parar
+quando quiser.
+
+STACK
+- Backend: FastAPI + python‑socketio (ASGI combinado). Porta 8001. Rotas REST sob
+  /api. Socket.io em /api/socketio.
+- Base de dados: MongoDB (coleções "sessoes" e "utilizadores"), acedida via MONGO_URL
+  e DB_NAME do .env.
+- Auth: JWT + bcrypt (apenas técnico). Contas semeadas a partir do .env no arranque,
+  com reposição de password se divergir. O cliente não tem login (token aleatório
+  persistido em localStorage).
+- Frontend: HTML/CSS/JS puro servido de frontend/public/ (mesma origem). O frontend
+  usa sempre location.origin para chamar a API.
+- WebRTC: cliente = offerer, técnico = answerer. STUN do Google + TURN (Metered),
+  ambos lidos do .env e servidos por GET /api/ice. Fila de candidatos ICE até a
+  descrição remota estar pronta (evita ecrã preto). Screen Wake Lock no cliente.
+
+PÁGINAS
+- /tecnico.html: login (JWT), CRM com sessões "Online agora" e "Histórico", link
+  próprio do operador com botão copiar, renomear/apagar/limpar, alterar password.
+  Cada cartão de sessão online mostra uma MINIATURA de vídeo ao vivo (multi‑peer:
+  um mapa pcs[sessaoId] de RTCPeerConnection). Clicar na miniatura ou em "Ver/
+  Reconectar" abre um modal que reutiliza o mesmo stream; clicar no vídeo emite as
+  coordenadas do clique em percentagem (aware de letterbox por object‑fit: contain).
+- /cliente.html?op=<linkId>: mobile‑first, um botão grande "COMEÇAR"
+  (getDisplayMedia, frameRate ~10). Estados: inicio/ativo/erro/reconectar. Ao receber
+  as coordenadas do técnico, desenha um círculo vermelho e simula pointer/mouse/click
+  via elementFromPoint. É uma PWA instalável (manifest + service worker + ícones);
+  guarda o "op" em localStorage para a app instalada arrancar sem o parâmetro no URL.
+
+SOCKET.IO (eventos)
+cliente:hello, cliente:sessao, cliente:partilhar, sessoes:atualizar, tecnico:ver,
+tecnico:pronto, tecnico:pedir-reconexao, webrtc:offer/answer/ice (com sessaoId),
+tecnico:clique, extensao:hello/ok/erro. Salas: op:{email} e sess:{id}.
+Cuidado com a corrida cliente:hello vs cliente:partilhar (o cliente só deve anunciar
+a partilha depois de receber cliente:sessao; o servidor deve tolerar/retry).
+
+API REST
+GET /api/, GET /api/ice, POST /api/auth/login, GET /api/auth/me,
+POST /api/auth/senha, GET /api/sessoes, PATCH /api/sessoes/{id},
+DELETE /api/sessoes/{id}, DELETE /api/sessoes.
+
+EXTENSÃO CHROME (MV3, opcional)
+Permite círculo e cliques REAIS em qualquer separador do navegador do cliente:
+offscreen.html mantém o Socket.io; background.js usa chrome.debugger
+(Input.dispatchMouseEvent); content.js injeta o círculo e mapeia % do ecrã para o
+viewport da aba (requer partilha do ECRÃ INTEIRO).
+
+REQUISITOS DE QUALIDADE
+- Design mobile‑first, tom claro (verde Atlas), linguagem simples e honesta sobre
+  limitações. Todos os elementos interativos com data-testid.
+- Isolamento estrito por operador em todas as rotas/eventos.
+- Nada de segredos hardcoded: tudo via .env. CORS configurável.
+</pre>
+</div>
+
+</body>
+</html>
