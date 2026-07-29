@@ -15,7 +15,13 @@
   const telaAtivo = el("tela-ativo");
   const telaErro = el("tela-erro");
   const telaReconectar = el("tela-reconectar");
+  const telaNavegador = el("tela-navegador");
   const txtErro = el("txt-erro");
+
+  const ehIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const emStandalonePWA = window.matchMedia("(display-mode: standalone)").matches
+    || window.navigator.standalone === true;
 
   let socket, pc, stream;
   let sessaoId = null;
@@ -31,7 +37,7 @@
     .catch(() => {});
 
   function mostrar(tela) {
-    [telaInicio, telaAtivo, telaErro, telaReconectar].forEach((t) => t.classList.add("oculto"));
+    [telaInicio, telaAtivo, telaErro, telaReconectar, telaNavegador].forEach((t) => t && t.classList.add("oculto"));
     tela.classList.remove("oculto");
   }
 
@@ -75,9 +81,10 @@
       bridge.setAttribute("data-token", token || "");
       bridge.setAttribute("data-server", location.origin);
     }
-    // Botão de instalar extensão (se configurada)
+    // Botão de instalar extensão — só faz sentido no Chrome de computador
+    const ehMovel = /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
     const link = el("link-extensao");
-    if (link && EXTENSAO_URL) {
+    if (link && EXTENSAO_URL && !ehMovel) {
       link.href = EXTENSAO_URL;
       link.classList.remove("oculto");
     }
@@ -151,24 +158,50 @@
     setTimeout(() => clearInterval(iv), 5000);
   }
 
+  // Abre a página no navegador (Chrome), onde a captura de ecrã funciona no Android.
+  function urlNoNavegador() {
+    return location.origin + "/cliente.html?op=" + encodeURIComponent(op || "") + "&nav=1";
+  }
+
+  function mostrarFallbackNavegador() {
+    mostrar(telaNavegador);
+    const linkBox = el("nav-link");
+    if (linkBox) linkBox.textContent = urlNoNavegador();
+  }
+
   async function comecar() {
+    // iOS/Safari não suporta partilha de ecrã por web (nem em app instalada)
+    if (ehIOS) {
+      erro("No iPhone/iPad, a partilha de ecrã pela web não é suportada. Utilize um telemóvel Android ou um computador.");
+      return;
+    }
+    const md = navigator.mediaDevices;
+    // API de captura indisponível (comum na app instalada em standalone no Android) -> recurso ao Chrome
+    if (!md || !md.getDisplayMedia) {
+      mostrarFallbackNavegador();
+      return;
+    }
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-        erro("O seu navegador não suporta partilha de ecrã. Em iPhone/iPad (Safari) esta função não está disponível.");
-        return;
-      }
-      stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { cursor: "always", frameRate: 10 },
-        audio: false,
-      });
+      // Constraints mínimas: mais compatíveis com o Android (algumas versões rejeitam cursor/frameRate)
+      stream = await md.getDisplayMedia({ video: true, audio: false });
+      // Tenta baixar o frame rate (não crítico se falhar)
+      try { await stream.getVideoTracks()[0].applyConstraints({ frameRate: 10 }); } catch (e) {}
       mostrar(telaAtivo);
       await pedirWakeLock();
       partilharQuando(true);
       stream.getVideoTracks()[0].addEventListener("ended", partilhaInterrompida);
       if (tecnicoPronto) criarOferta();
     } catch (e) {
-      console.warn(e);
-      erro("A partilha foi cancelada ou não foi autorizada. Toque em “Tentar novamente” e permita a partilha.");
+      console.warn("getDisplayMedia falhou:", e && e.name, e && e.message);
+      const nome = e && e.name;
+      if (nome === "NotAllowedError" || nome === "AbortError") {
+        erro("A partilha foi cancelada. Toque em “Tentar novamente” e, no aviso do telemóvel, escolha o ecrã inteiro e toque em “Começar agora”.");
+      } else if (nome === "NotSupportedError" || nome === "TypeError" || nome === "InvalidStateError" || nome === "NotReadableError") {
+        // A app instalada bloqueou a captura -> abrir no Chrome
+        mostrarFallbackNavegador();
+      } else {
+        erro("Não foi possível iniciar a partilha (" + (nome || "erro") + "). Abra este link no Chrome e permita a gravação do ecrã.");
+      }
     }
   }
 
@@ -234,6 +267,15 @@
   el("btn-retry").addEventListener("click", comecar);
   el("btn-reconectar").addEventListener("click", comecar);
   el("btn-parar").addEventListener("click", pararPartilha);
+
+  const btnAbrirNav = el("btn-abrir-navegador");
+  if (btnAbrirNav) btnAbrirNav.addEventListener("click", () => {
+    window.open(urlNoNavegador(), "_blank", "noopener");
+  });
+  const btnCopiarNav = el("btn-copiar-link");
+  if (btnCopiarNav) btnCopiarNav.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(urlNoNavegador()); btnCopiarNav.textContent = "Link copiado ✓"; setTimeout(() => (btnCopiarNav.textContent = "Copiar link"), 1800); } catch (e) {}
+  });
 
   // ---- PWA: instalação + service worker ----
   if ("serviceWorker" in navigator) {

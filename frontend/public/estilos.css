@@ -145,6 +145,13 @@ button { font-family: inherit; cursor: pointer; border: none; }
 .botao-instalar:hover { background: #e2f0da; transform: translateY(-1px); }
 .botao-instalar span { font-size: 1.1rem; }
 
+/* Caixa do link no ecrã "abrir no Chrome" */
+.nav-link-box {
+  margin-top: 14px; padding: 10px 12px; border-radius: 12px;
+  background: #f2f8f0; border: 1px dashed #cfe6c4;
+  font-size: .78rem; color: #2c4a37; word-break: break-all; line-height: 1.4;
+}
+
 .limitacoes {
   font-size: .86rem;
   color: #47624f;

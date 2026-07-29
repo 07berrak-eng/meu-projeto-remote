@@ -1,6 +1,6 @@
 // Service worker mínimo da PWA Atlas (cliente).
 // Objetivo: tornar a app instalável e funcionar como app. NUNCA interceta /api nem Socket.io.
-const CACHE = "atlas-pwa-v1";
+const CACHE = "atlas-pwa-v2";
 const ATIVOS = [
   "/cliente.html",
   "/estilos.css",

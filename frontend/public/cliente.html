@@ -85,6 +85,21 @@
         <button id="btn-reconectar" class="botao-comecar" data-testid="cliente-reconectar-btn"><span>🔄</span> RECONECTAR</button>
       </div>
     </section>
+
+    <!-- Estado: abrir no navegador (recurso para Android quando a app instalada bloqueia a captura) -->
+    <section id="tela-navegador" class="oculto">
+      <div class="c-cartao">
+        <div class="pulso" data-testid="cliente-navegador-pulso" style="color:#1f7a3d;background:#e8f5e9">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <h2>Só mais um passo</h2>
+        <p>Para partilhar o ecrã do seu telemóvel Android, abra esta página no <strong>Chrome</strong> e toque em <strong>COMEÇAR</strong>.</p>
+        <button id="btn-abrir-navegador" class="botao-comecar" data-testid="cliente-abrir-navegador-btn"><span>🌐</span> ABRIR NO CHROME</button>
+        <button id="btn-copiar-link" class="botao-secundario" data-testid="cliente-copiar-link-btn" style="margin-top:10px">Copiar link</button>
+        <div class="nav-link-box"><span id="nav-link" data-testid="cliente-nav-link"></span></div>
+        <p style="font-size:.82rem;margin-top:12px;color:#4f6a58">Se o botão não abrir o Chrome, copie o link e cole-o na barra de endereço do Chrome.</p>
+      </div>
+    </section>
   </main>
 
   <div id="atlas-ext-bridge" style="display:none"></div>
