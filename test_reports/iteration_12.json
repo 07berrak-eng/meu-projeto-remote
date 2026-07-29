@@ -1,0 +1,20 @@
+{
+  "summary": "Regression retest after backend race-condition fix (cliente_partilhar retry) and client-side gating (partilharQuando/sessaoPronta). All fast-click scenarios PASS. Executed 3 back-to-back cycles where COMEÇAR is clicked ~45-91ms after the client page finishes rendering (i.e., well under the previous 3-4s safe window). In every cycle the technician panel showed the client Online with 'A partilhar' badge AND the miniatura (thumb-video-<id>) received a live stream (videoWidth=320). Cycle 0 also validated the full modal flow: click thumb -> modal-ver open (oculto=false) with video-ecra vw=320 and srcObject present; click on video-ecra generates a .circulo-toque on the client (count went 0->1); close modal keeps the miniature live (vw=320 preserved); btn-ver reopens the modal with the same stream. Partilhar/parar/partilhar cycles also worked with videoWidth going back to >0 after each restart.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/test_reports/iteration_12.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Fix verified. Client-side gate (partilharQuando waiting for sessaoPronta) + backend retry loop (up to 2s) reliably eliminate the sid_sessao race. Recommend keeping BOTH layers so a slow network doesn't break either side.",
+    "Consider adding an ack to cliente:partilhar so future regressions surface immediately in the client console.",
+    "Minor: btn-comecar text after stop still shows 'COMEÇAR' but the button re-enters sharing on second click within the same session — verified working across 3 iterations."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (frontend-only)", "frontend": "100% (3/3 fast-click cycles + full modal/touch/reconnect flow)"},
+  "test_credentials": "Técnico: suporte@atlas.pt / Garciafinancas007 | Cliente: /cliente.html?op=7b6078d21a",
+  "seed_data_creation": "One new session in Histórico from cycle 0 (18:25:08). Others reused existing session id 43a325c6.",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Race fix confirmed with elapsed 0.41s-0.70s from fast click to badge+video. Stub getDisplayMedia via context.add_init_script BEFORE opening /cliente.html; canvas.captureStream(10) yields videoWidth=320 headless. Note: #grelha-online has display:none when empty — do NOT wait_for_selector state=visible on it; instead poll for cards inside it. modal-ver hidden via .oculto class (poll classList).",
+  "rca_of_the_issue": "Previously python-socketio async handlers processed cliente:partilhar before cliente:hello wrote sid_sessao[sid]; handler dropped the event, aPartilhar stayed false. Fix: (a) backend cliente_partilhar retries up to 2s polling sid_sessao, (b) client partilharQuando waits for sessaoPronta before emitting. Both layers now confirmed effective under fast-click load."
+}

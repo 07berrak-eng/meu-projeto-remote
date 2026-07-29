@@ -56,7 +56,7 @@
 
   socket.on("connect", () => {
     socket.emit("cliente:hello", { op, token, userAgent: navigator.userAgent });
-    if (stream) socket.emit("cliente:partilhar", { ativo: true });
+    if (stream) partilharQuando(true);
   });
 
   socket.on("cliente:sessao", (d) => {
@@ -140,6 +140,15 @@
     if (document.visibilityState === "visible" && stream && !wakeLock) pedirWakeLock();
   });
 
+  // Anuncia a partilha ao servidor só depois do handshake cliente:sessao (evita corrida com cliente:hello)
+  function partilharQuando(ativo) {
+    if (!ativo || sessaoPronta) { socket.emit("cliente:partilhar", { ativo }); return; }
+    const iv = setInterval(() => {
+      if (sessaoPronta) { clearInterval(iv); socket.emit("cliente:partilhar", { ativo: true }); }
+    }, 100);
+    setTimeout(() => clearInterval(iv), 5000);
+  }
+
   async function comecar() {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
@@ -152,7 +161,7 @@
       });
       mostrar(telaAtivo);
       await pedirWakeLock();
-      socket.emit("cliente:partilhar", { ativo: true });
+      partilharQuando(true);
       stream.getVideoTracks()[0].addEventListener("ended", partilhaInterrompida);
       if (tecnicoPronto) criarOferta();
     } catch (e) {

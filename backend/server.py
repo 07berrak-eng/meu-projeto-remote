@@ -7,6 +7,7 @@ load_dotenv(ROOT_DIR / ".env")
 
 import logging
 import uuid
+import asyncio
 from datetime import datetime, timezone, timedelta
 
 import bcrypt
@@ -268,6 +269,13 @@ async def cliente_hello(sid, data):
 @sio.on("cliente:partilhar")
 async def cliente_partilhar(sid, data):
     sessao_id = sid_sessao.get(sid)
+    if not sessao_id:
+        # corrida possível com cliente:hello — aguarda o mapeamento ser escrito
+        for _ in range(20):
+            await asyncio.sleep(0.1)
+            sessao_id = sid_sessao.get(sid)
+            if sessao_id:
+                break
     if not sessao_id:
         return
     ativo = bool((data or {}).get("ativo"))
