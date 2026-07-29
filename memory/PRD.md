@@ -31,6 +31,11 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - P2: Rate-limiting / anti-força-bruta, rotação de JWT_SECRET, CORS restrito, RGPD/consentimento explícito.
 - P2: Indicador de qualidade de ligação / reconexão automática do vídeo.
 
-## Notas
-- Partilha real de ecrã exige browser real (getDisplayMedia) — não testável em headless.
-- iOS Safari não suporta partilha de ecrã por web (comunicado ao cliente).
+## Implementado (2026-07-29) — continuação
+- Credenciais TURN Metered aplicadas no `.env` e confirmadas via `/api/ice` (corrige ecrã preto entre redes diferentes em produção — requer REDEPLOY).
+- Miniaturas AO VIVO no painel do técnico: assim que o painel abre, liga-se automaticamente a TODOS os clientes online que estão a partilhar e mostra a tela ao vivo dentro de cada cartão (antes de clicar em Ver). Refactor multi-peer em `tecnico.js` (mapa `pcs` por `sessaoId`); backend inclui `sessaoId` em `webrtc:offer`/`webrtc:ice`. Clicar na miniatura ou em "Ver/Reconectar" abre o modal reutilizando o mesmo stream; fechar o modal mantém a miniatura viva. (Testado 100% — iteration_12.json)
+- Corrigida condição de corrida `cliente:hello` vs `cliente:partilhar` (o selo "A partilhar"/miniatura falhava quando o cliente clicava COMEÇAR muito rápido): retry no backend (`cliente_partilhar`) + gating no cliente (`partilharQuando` espera `sessaoPronta`). (Testado 100%)
+- Extensão Chrome v1.0.3: corrigido o mapeamento de coordenadas em `content.js` (removida subtração incorreta de `chromeW`; viewport = `screenX`, `screenY + (outerHeight-innerHeight)`). NÃO testável no ambiente cloud — requer reinstalar/republicar e testar em Chrome real. Requer partilha do ECRÃ INTEIRO.
+
+## Notas de ambiente
+- Alterações a `.env` (TURN) e à extensão só chegam à produção após REDEPLOY / reinstalação da extensão.
