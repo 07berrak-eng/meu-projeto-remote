@@ -39,3 +39,10 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 
 ## Notas de ambiente
 - Alterações a `.env` (TURN) e à extensão só chegam à produção após REDEPLOY / reinstalação da extensão.
+
+## App Android instalável — PWA (2026-07-29)
+- A página do cliente é agora uma PWA instalável no Android: `manifest.webmanifest` (nome "Suporte Atlas", display standalone, ícones 192/512 + maskable, splash via background/theme), `sw.js` (service worker mínimo; network-first para navegação, nunca interceta `/api`), ícones em `/frontend/public/icons/`.
+- Botão "📲 Instalar aplicação" na página inicial do cliente (aparece via `beforeinstallprompt`).
+- `op` do operador é guardado em `localStorage` (`atlas_last_op`); a app instalada arranca em `/cliente.html` (sem `op` no URL) e recupera o operador. Verificado (não mostra "Link inválido").
+- Partilha de ecrã: no Chrome Android, `getDisplayMedia` captura o ecrã inteiro (todas as apps) — o técnico vê tudo. O círculo/cliques só funcionam dentro da própria PWA (limitação da web no Android).
+- Como instalar: abrir o link no Chrome Android → tocar em "Instalar aplicação" (ou menu ⋮ → "Instalar app"/"Adicionar ao ecrã principal"). Requer REDEPLOY para produção.

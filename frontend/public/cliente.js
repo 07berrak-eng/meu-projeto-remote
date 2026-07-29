@@ -4,7 +4,9 @@
   const EXTENSAO_URL = "https://chromewebstore.google.com/detail/ggjlmikhnhicgahmbhnnlclkffhgceon";
 
   const params = new URLSearchParams(location.search);
-  const op = params.get("op");
+  let op = params.get("op");
+  if (op) { try { localStorage.setItem("atlas_last_op", op); } catch (e) {} }
+  else { op = localStorage.getItem("atlas_last_op"); }
   const chaveToken = "atlas_token_" + (op || "x");
   let token = localStorage.getItem(chaveToken) || params.get("token") || null;
 
@@ -232,4 +234,35 @@
   el("btn-retry").addEventListener("click", comecar);
   el("btn-reconectar").addEventListener("click", comecar);
   el("btn-parar").addEventListener("click", pararPartilha);
+
+  // ---- PWA: instalação + service worker ----
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    });
+  }
+
+  let deferredPrompt = null;
+  const btnInstalar = el("btn-instalar");
+  const emStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (btnInstalar && !emStandalone) btnInstalar.classList.remove("oculto");
+  });
+
+  if (btnInstalar) {
+    btnInstalar.addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      try { await deferredPrompt.userChoice; } catch (e) {}
+      deferredPrompt = null;
+      btnInstalar.classList.add("oculto");
+    });
+  }
+
+  window.addEventListener("appinstalled", () => {
+    if (btnInstalar) btnInstalar.classList.add("oculto");
+  });
 })();
