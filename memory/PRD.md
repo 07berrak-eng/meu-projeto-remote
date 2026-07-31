@@ -91,3 +91,11 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - Deslizar/arrastar: `tecnico.js` substituiu o `click` por pointerdown/move/up no vídeo, capturando o traço (pontos %+tempo) e emitindo `tecnico:gesto {pontos, duracao}` no fim (e `tecnico:clique` no down, p/ compat. web/extensão). Backend relaia `tecnico:gesto` para o cliente/extensão. App Android: `ControlService.gesture()` reconstrói o Path e executa via `dispatchGesture` (tap se 1 ponto). Removido o handler `tecnico:clique` do nativo (evita duplo toque).
 - Início com um clique: botão "COMEÇAR" mostra AlertDialog a avisar que ativa PARTILHA + CONTROLO juntos. Se a Acessibilidade não estiver ligada, guia a ativar uma única vez; depois cada COMEÇAR inicia ambos. Layout/labels atualizados.
 - APK recompilado (~49,9 MB). Web smoke test sem erros de consola; nativo não testável em dispositivo aqui.
+
+
+## Ícone azul + APK assinado de release / Play Protect (2026-06-XX)
+- Novo ícone da app: logótipo circular azul (símbolo Bitcoin, fundo azul-escuro) gerado em todas as densidades mipmap (mdpi→xxxhdpi), incl. `ic_launcher_round` com máscara circular. Label mantém "Suporte Atlas".
+- Assinatura de release: criada `release.keystore` (keytool, alias `atlas_alias`, storepass/keypass `atlas123`, validade 10000 dias, CN=Atlas Support). `app/build.gradle` passou a ter `signingConfigs.release` + `buildTypes.release { debuggable false; signingConfig }`.
+- Build: `/root/build_apk.sh` agora corre `assembleRelease` e copia `app-release.apk` → `/app/frontend/public/atlas-suporte.apk` (~48,8 MB). APK verificado com apksigner: esquema v2 OK, DN=CN=Atlas Support. Ícone embutido confirmado visualmente (res/9w.png = logo azul).
+- Nota Play Protect: assinatura de release remove o flag de "app de debug/não confiável". Por ser sideload + Acessibilidade, pode persistir aviso de permissões sensíveis (aceite uma vez pelo utilizador). Publicar na Play Store não está no âmbito.
+- IMPORTANTE p/ produção: após recompilar no preview, o utilizador tem de clicar em **Deploy** na Emergent para o novo APK chegar à produção.

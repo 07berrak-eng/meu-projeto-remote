@@ -15,9 +15,20 @@ android {
         versionName "1.0"
     }
 
+    signingConfigs {
+        release {
+            storeFile file("${rootDir}/release.keystore")
+            storePassword "atlas123"
+            keyAlias "atlas_alias"
+            keyPassword "atlas123"
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
+            debuggable false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
