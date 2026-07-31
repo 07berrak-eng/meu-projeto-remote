@@ -35,6 +35,7 @@
       <div class="abas">
         <button class="aba ativa" data-aba="sessoes" data-testid="aba-sessoes">Sessões</button>
         <button class="aba" data-aba="config" data-testid="aba-config">Configurações</button>
+        <button class="aba oculto" id="aba-contas" data-aba="contas" data-testid="aba-contas">Contas</button>
       </div>
       <div class="credito" data-testid="credito">✦ CRIADO POR: VICTOR SILVA &amp; PEDRO CABRAL</div>
       <button class="sair" id="btn-sair" data-testid="btn-sair">Sair</button>
@@ -72,6 +73,29 @@
             <button type="submit" class="botao-primario" data-testid="senha-submit">Guardar</button>
             <div class="msg-ok" id="senha-msg" data-testid="senha-msg"></div>
           </form>
+        </div>
+      </section>
+
+      <!-- CONTAS (admin) -->
+      <section id="painel-contas" class="oculto">
+        <div class="config-cartao">
+          <h2>Criar nova conta de técnico</h2>
+          <p class="sub">O técnico entra com este email e palavra-passe e recebe o seu próprio link de cliente.</p>
+          <form id="form-conta" data-testid="form-conta">
+            <label for="in-novo-email">Email</label>
+            <input id="in-novo-email" type="email" placeholder="nome@atlas.pt" data-testid="conta-email" required />
+            <label for="in-nova-senha">Palavra-passe</label>
+            <input id="in-nova-senha" type="text" placeholder="mínimo 4 caracteres" data-testid="conta-senha" required />
+            <button type="submit" class="botao-primario" data-testid="conta-submit">Criar conta</button>
+            <div class="msg-ok" id="conta-msg" data-testid="conta-msg"></div>
+            <div class="msg-erro" id="conta-erro" data-testid="conta-erro"></div>
+          </form>
+        </div>
+
+        <div class="config-cartao" style="margin-top:22px">
+          <h2>Contas existentes <span class="conta" id="conta-total">0</span></h2>
+          <p class="sub">A app Android liga sempre à conta de administrador. As restantes são técnicos com link próprio.</p>
+          <div id="lista-contas" class="lista-contas" data-testid="lista-contas"></div>
         </div>
       </section>
     </main>

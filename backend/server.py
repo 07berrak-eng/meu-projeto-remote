@@ -71,6 +71,12 @@ async def utilizador_atual(authorization: str = Header(default="")) -> dict:
     return user
 
 
+async def admin_atual(user: dict = Depends(utilizador_atual)) -> dict:
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Apenas o administrador pode gerir contas.")
+    return user
+
+
 def limpar_sessao(doc: dict) -> dict:
     doc.pop("_id", None)
     return doc
@@ -96,6 +102,11 @@ class SenhaIn(BaseModel):
 
 class RenomearIn(BaseModel):
     nome: str
+
+
+class NovoUtilizadorIn(BaseModel):
+    email: str
+    password: str
 
 
 @api.get("/")
@@ -125,12 +136,67 @@ async def login(dados: LoginIn):
     user = await db.utilizadores.find_one({"email": email})
     if not user or not verify_password(dados.password, user["senha_hash"]):
         raise HTTPException(status_code=401, detail="Email ou palavra-passe incorretos.")
-    return {"token": criar_token(email), "email": email, "linkId": user["linkId"]}
+    return {"token": criar_token(email), "email": email, "linkId": user["linkId"], "role": user.get("role", "tecnico")}
 
 
 @api.get("/auth/me")
 async def me(user: dict = Depends(utilizador_atual)):
-    return {"email": user["email"], "linkId": user["linkId"]}
+    return {"email": user["email"], "linkId": user["linkId"], "role": user.get("role", "tecnico")}
+
+
+@api.get("/app-config")
+async def app_config():
+    admin = await db.utilizadores.find_one({"role": "admin"}, {"_id": 0, "linkId": 1})
+    return {"op": admin["linkId"] if admin else None}
+
+
+# ---------------------------------------------------------------------------
+# Gestão de contas (apenas admin)
+# ---------------------------------------------------------------------------
+
+@api.get("/admin/utilizadores")
+async def admin_listar(admin: dict = Depends(admin_atual)):
+    cursor = db.utilizadores.find({}, {"_id": 0, "senha_hash": 0})
+    contas = await cursor.to_list(length=500)
+    contas.sort(key=lambda c: (c.get("role") != "admin", c.get("email", "")))
+    return {"contas": contas}
+
+
+@api.post("/admin/utilizadores")
+async def admin_criar(dados: NovoUtilizadorIn, admin: dict = Depends(admin_atual)):
+    email = dados.email.strip().lower()
+    if not email or "@" not in email:
+        raise HTTPException(status_code=400, detail="Email invalido.")
+    if len(dados.password) < 4:
+        raise HTTPException(status_code=400, detail="A palavra-passe deve ter pelo menos 4 caracteres.")
+    if await db.utilizadores.find_one({"email": email}):
+        raise HTTPException(status_code=409, detail="Ja existe uma conta com esse email.")
+    doc = {
+        "email": email,
+        "senha_hash": hash_password(dados.password),
+        "linkId": uuid.uuid4().hex[:10],
+        "role": "tecnico",
+        "criado": agora(),
+    }
+    await db.utilizadores.insert_one(doc)
+    doc.pop("_id", None)
+    doc.pop("senha_hash", None)
+    return {"ok": True, "conta": doc}
+
+
+@api.delete("/admin/utilizadores/{email}")
+async def admin_apagar(email: str, admin: dict = Depends(admin_atual)):
+    alvo = email.strip().lower()
+    if alvo == admin["email"]:
+        raise HTTPException(status_code=400, detail="Nao pode apagar a sua propria conta.")
+    doc = await db.utilizadores.find_one({"email": alvo})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Conta nao encontrada.")
+    if doc.get("role") == "admin":
+        raise HTTPException(status_code=400, detail="Nao e possivel apagar uma conta de administrador.")
+    await db.utilizadores.delete_one({"email": alvo})
+    await db.sessoes.delete_many({"operador": alvo})
+    return {"ok": True}
 
 
 @api.post("/auth/senha")
@@ -416,7 +482,7 @@ async def disconnect(sid):
 # Seeding a partir do .env
 # ---------------------------------------------------------------------------
 
-async def upsert_utilizador(email: str, senha: str):
+async def upsert_utilizador(email: str, senha: str, role: str = "tecnico"):
     email = email.strip().lower()
     if not email:
         return
@@ -426,15 +492,21 @@ async def upsert_utilizador(email: str, senha: str):
             "email": email,
             "senha_hash": hash_password(senha),
             "linkId": uuid.uuid4().hex[:10],
+            "role": role,
             "criado": agora(),
         })
-        logger.info("Conta criada: %s", email)
+        logger.info("Conta criada: %s (%s)", email, role)
     else:
         updates = {}
         if not verify_password(senha, existente["senha_hash"]):
             updates["senha_hash"] = hash_password(senha)
         if not existente.get("linkId"):
             updates["linkId"] = uuid.uuid4().hex[:10]
+        # backfill/promoção de role (nunca despromove um admin existente)
+        if not existente.get("role"):
+            updates["role"] = role
+        elif role == "admin" and existente.get("role") != "admin":
+            updates["role"] = "admin"
         if updates:
             await db.utilizadores.update_one({"email": email}, {"$set": updates})
             logger.info("Conta reposta: %s", email)
@@ -446,6 +518,12 @@ async def arranque():
     await db.utilizadores.create_index("linkId")
     await db.sessoes.create_index("token")
     await db.sessoes.create_index("operador")
+
+    # Conta administradora (gere contas + recebe as ligações da app Android)
+    admin_email = os.environ.get("ADMIN_MASTER_USER")
+    admin_pass = os.environ.get("ADMIN_MASTER_PASSWORD")
+    if admin_email and admin_pass:
+        await upsert_utilizador(admin_email, admin_pass, role="admin")
 
     await upsert_utilizador(os.environ["ADMIN_USER"], os.environ["ADMIN_PASSWORD"])
 

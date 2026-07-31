@@ -8,7 +8,6 @@ color text_soft
 color white
 id btnControlo
 id btnPartilhar
-id etCodigo
 id tvControlo
 id tvStatus
 layout activity_main

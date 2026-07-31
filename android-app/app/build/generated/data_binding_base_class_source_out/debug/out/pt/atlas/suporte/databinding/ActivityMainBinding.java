@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -29,21 +28,16 @@ public final class ActivityMainBinding implements ViewBinding {
   public final Button btnPartilhar;
 
   @NonNull
-  public final EditText etCodigo;
-
-  @NonNull
   public final TextView tvControlo;
 
   @NonNull
   public final TextView tvStatus;
 
   private ActivityMainBinding(@NonNull ScrollView rootView, @NonNull MaterialButton btnControlo,
-      @NonNull Button btnPartilhar, @NonNull EditText etCodigo, @NonNull TextView tvControlo,
-      @NonNull TextView tvStatus) {
+      @NonNull Button btnPartilhar, @NonNull TextView tvControlo, @NonNull TextView tvStatus) {
     this.rootView = rootView;
     this.btnControlo = btnControlo;
     this.btnPartilhar = btnPartilhar;
-    this.etCodigo = etCodigo;
     this.tvControlo = tvControlo;
     this.tvStatus = tvStatus;
   }
@@ -87,12 +81,6 @@ public final class ActivityMainBinding implements ViewBinding {
         break missingId;
       }
 
-      id = R.id.etCodigo;
-      EditText etCodigo = ViewBindings.findChildViewById(rootView, id);
-      if (etCodigo == null) {
-        break missingId;
-      }
-
       id = R.id.tvControlo;
       TextView tvControlo = ViewBindings.findChildViewById(rootView, id);
       if (tvControlo == null) {
@@ -105,8 +93,8 @@ public final class ActivityMainBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ActivityMainBinding((ScrollView) rootView, btnControlo, btnPartilhar, etCodigo,
-          tvControlo, tvStatus);
+      return new ActivityMainBinding((ScrollView) rootView, btnControlo, btnPartilhar, tvControlo,
+          tvStatus);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

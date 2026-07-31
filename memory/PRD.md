@@ -74,3 +74,10 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - Manifesto: serviço com `BIND_ACCESSIBILITY_SERVICE` + `res/xml/accessibility_config.xml`.
 - APK recompilado (~49,8 MB) em `/app/frontend/public/atlas-suporte.apk` (contém libs WebRTC arm64/armeabi/x86/x86_64). NÃO testado em dispositivo.
 - IMPORTANTE: a keystore debug pode mudar entre builds (o `/root` foi parcialmente limpo), por isso pode ser preciso DESINSTALAR a app antiga antes de instalar a nova (assinaturas diferentes).
+
+## Conta ADMIN + gestão de contas + app liga direto ao admin (2026-07-31)
+- Backend: campo `role` ("admin"|"tecnico"); dependência `admin_atual` (403 p/ não-admin). Seeding de `admin.tecnico@atlas.pt` (env ADMIN_MASTER_USER/PASSWORD) com role admin; backfill de role nos existentes.
+- Endpoints: `GET /api/app-config` (público → linkId do admin), `GET/POST /api/admin/utilizadores`, `DELETE /api/admin/utilizadores/{email}` (protege admin e a própria conta; apaga também as sessões do técnico removido). login/me devolvem `role`.
+- Frontend tecnico: aba "Contas" (só admin) com criar/apagar contas e lista (tag ADMIN sem apagar). Testado no browser (criar+apagar OK, 403 p/ não-admin via curl).
+- App Android: removido o campo de link; botão único **CONECTAR** → busca o op em `/api/app-config` e liga sempre à conta admin. APK recompilado (~49,8 MB).
+- Credenciais admin: admin.tecnico@atlas.pt / Garciafinancas0073040.

@@ -1,51 +1,47 @@
 [
     {
-        "merged": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-debug-4:/mipmap-hdpi_ic_launcher.png.flat",
-        "source": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-main-6:/mipmap-hdpi/ic_launcher.png"
+        "merged": "pt.atlas.suporte.app-debug-4:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "pt.atlas.suporte.app-main-6:/mipmap-hdpi/ic_launcher.png"
     },
     {
-        "merged": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-debug-4:/mipmap-xxxhdpi_ic_launcher.png.flat",
-        "source": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-main-6:/mipmap-xxxhdpi/ic_launcher.png"
+        "merged": "pt.atlas.suporte.app-debug-4:/mipmap-xxhdpi_ic_launcher_round.png.flat",
+        "source": "pt.atlas.suporte.app-main-6:/mipmap-xxhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-debug-4:/mipmap-xhdpi_ic_launcher.png.flat",
-        "source": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-main-6:/mipmap-xhdpi/ic_launcher.png"
+        "merged": "pt.atlas.suporte.app-debug-4:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "pt.atlas.suporte.app-main-6:/mipmap-xxxhdpi/ic_launcher.png"
     },
     {
         "merged": "pt.atlas.suporte.app-debug-4:/layout_activity_main.xml.flat",
         "source": "pt.atlas.suporte.app-main-6:/layout/activity_main.xml"
     },
     {
-        "merged": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-debug-4:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
-        "source": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-main-6:/mipmap-xxxhdpi/ic_launcher_round.png"
+        "merged": "pt.atlas.suporte.app-debug-4:/mipmap-xhdpi_ic_launcher_round.png.flat",
+        "source": "pt.atlas.suporte.app-main-6:/mipmap-xhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-debug-4:/mipmap-mdpi_ic_launcher.png.flat",
-        "source": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-main-6:/mipmap-mdpi/ic_launcher.png"
+        "merged": "pt.atlas.suporte.app-debug-4:/mipmap-hdpi_ic_launcher_round.png.flat",
+        "source": "pt.atlas.suporte.app-main-6:/mipmap-hdpi/ic_launcher_round.png"
     },
     {
-        "merged": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-debug-4:/mipmap-xxhdpi_ic_launcher_round.png.flat",
-        "source": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-main-6:/mipmap-xxhdpi/ic_launcher_round.png"
+        "merged": "pt.atlas.suporte.app-debug-4:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "pt.atlas.suporte.app-main-6:/mipmap-mdpi/ic_launcher.png"
     },
     {
-        "merged": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-debug-4:/mipmap-mdpi_ic_launcher_round.png.flat",
-        "source": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-main-6:/mipmap-mdpi/ic_launcher_round.png"
+        "merged": "pt.atlas.suporte.app-debug-4:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "pt.atlas.suporte.app-main-6:/mipmap-xxhdpi/ic_launcher.png"
     },
     {
-        "merged": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-debug-4:/layout_activity_main.xml.flat",
-        "source": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-main-6:/layout/activity_main.xml"
+        "merged": "pt.atlas.suporte.app-debug-4:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "pt.atlas.suporte.app-main-6:/mipmap-xhdpi/ic_launcher.png"
     },
     {
-        "merged": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-debug-4:/mipmap-xhdpi_ic_launcher_round.png.flat",
-        "source": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-main-6:/mipmap-xhdpi/ic_launcher_round.png"
+        "merged": "pt.atlas.suporte.app-debug-4:/mipmap-xxxhdpi_ic_launcher_round.png.flat",
+        "source": "pt.atlas.suporte.app-main-6:/mipmap-xxxhdpi/ic_launcher_round.png"
     },
     {
-        "merged": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-debug-4:/mipmap-hdpi_ic_launcher_round.png.flat",
-        "source": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-main-6:/mipmap-hdpi/ic_launcher_round.png"
-    },
-    {
-        "merged": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-debug-4:/mipmap-xxhdpi_ic_launcher.png.flat",
-        "source": "/root/android-build/.gradle/daemon/8.7/pt.atlas.suporte.app-main-6:/mipmap-xxhdpi/ic_launcher.png"
+        "merged": "pt.atlas.suporte.app-debug-4:/mipmap-mdpi_ic_launcher_round.png.flat",
+        "source": "pt.atlas.suporte.app-main-6:/mipmap-mdpi/ic_launcher_round.png"
     },
     {
         "merged": "pt.atlas.suporte.app-debug-4:/xml_accessibility_config.xml.flat",

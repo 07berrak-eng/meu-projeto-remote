@@ -52,32 +52,19 @@
                 android:padding="22dp">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Link ou código de suporte"
-                    android:textColor="@color/text_dark"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/etCodigo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:hint="Cole aqui o link que o técnico enviou"
-                    android:inputType="textUri"
+                    android:text="Toque em CONECTAR para receber ajuda. Vamos pedir a sua autorização para partilhar o ecrã com o técnico."
                     android:textColor="@color/text_dark"
-                    android:textColorHint="#9AA89E"
-                    android:padding="12dp"
-                    android:background="#F2F8F0" />
+                    android:textSize="14sp" />
 
                 <Button
                     android:id="@+id/btnPartilhar"
                     android:layout_width="match_parent"
                     android:layout_height="58dp"
                     android:layout_marginTop="20dp"
-                    android:text="PARTILHAR ECRÃ"
-                    android:textSize="16sp"
+                    android:text="CONECTAR"
+                    android:textSize="17sp"
                     android:textStyle="bold"
                     android:textColor="@color/white"
                     android:backgroundTint="@color/atlas_green" />

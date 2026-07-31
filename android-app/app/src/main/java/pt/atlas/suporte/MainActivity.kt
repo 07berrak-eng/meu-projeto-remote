@@ -8,20 +8,23 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import org.json.JSONObject
 import pt.atlas.suporte.databinding.ActivityMainBinding
+import java.net.HttpURLConnection
+import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var b: ActivityMainBinding
     private lateinit var mpm: MediaProjectionManager
     private var ativo = false
+    private var opAtual: String? = null
 
     companion object {
         const val DEFAULT_SERVER = "https://remote-assist-21.emergent.host"
@@ -35,7 +38,7 @@ class MainActivity : AppCompatActivity() {
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             iniciarServico(result.resultCode, result.data!!)
         } else {
-            setStatus("Autorização de partilha recusada. Toque novamente para tentar.")
+            setStatus("Autorização de partilha recusada. Toque em CONECTAR para tentar.")
         }
     }
 
@@ -46,8 +49,7 @@ class MainActivity : AppCompatActivity() {
     private val statusReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val msg = intent?.getStringExtra("msg") ?: return
-            val on = intent.getBooleanExtra("ativo", ativo)
-            ativo = on
+            ativo = intent.getBooleanExtra("ativo", ativo)
             setStatus(msg)
             atualizarBotao()
         }
@@ -59,22 +61,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(b.root)
         mpm = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
-        val prefs = getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        b.etCodigo.setText(prefs.getString("ultimo_link", ""))
-
         b.btnPartilhar.setOnClickListener {
-            if (ativo) {
-                pararServico()
-            } else {
-                val entrada = b.etCodigo.text.toString().trim()
-                val (_, op) = extrair(entrada)
-                if (op.isBlank()) {
-                    setStatus("Cole o link de suporte que o técnico lhe enviou.")
-                    return@setOnClickListener
-                }
-                prefs.edit().putString("ultimo_link", entrada).apply()
-                garantirNotificacaoEProjecao()
-            }
+            if (ativo) pararServico() else conectar()
         }
 
         b.btnControlo.setOnClickListener {
@@ -98,24 +86,39 @@ class MainActivity : AppCompatActivity() {
         atualizarControlo()
     }
 
-    private fun atualizarControlo() {
-        val on = acessibilidadeAtiva()
-        b.tvControlo.text = if (on) "Controlo remoto: ATIVO ✓" else "Controlo remoto: desativado"
-        b.btnControlo.text = if (on) "Controlo remoto ativado ✓" else "Ativar controlo remoto (toques)"
-    }
-
-    private fun acessibilidadeAtiva(): Boolean {
-        return try {
-            val s = Settings.Secure.getString(
-                contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-            ) ?: return false
-            s.contains("$packageName/$packageName.ControlService")
-        } catch (e: Exception) { false }
-    }
-
     override fun onPause() {
         super.onPause()
         try { unregisterReceiver(statusReceiver) } catch (_: Exception) {}
+    }
+
+    private fun conectar() {
+        setStatus("A ligar ao suporte…")
+        Thread {
+            val op = buscarOp()
+            runOnUiThread {
+                if (op.isNullOrBlank()) {
+                    setStatus("Não foi possível ligar ao servidor. Verifique a Internet e tente novamente.")
+                } else {
+                    opAtual = op
+                    garantirNotificacaoEProjecao()
+                }
+            }
+        }.start()
+    }
+
+    /** Obtém o operador (conta admin) ao qual a app liga automaticamente. */
+    private fun buscarOp(): String? {
+        return try {
+            val con = URL("$DEFAULT_SERVER/api/app-config").openConnection() as HttpURLConnection
+            con.connectTimeout = 8000
+            con.readTimeout = 8000
+            con.inputStream.bufferedReader().use {
+                val o = JSONObject(it.readText())
+                if (o.isNull("op")) null else o.getString("op")
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 
     private fun garantirNotificacaoEProjecao() {
@@ -135,13 +138,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun iniciarServico(code: Int, data: Intent) {
-        val entrada = b.etCodigo.text.toString().trim()
-        val (server, op) = extrair(entrada)
+        val op = opAtual
+        if (op.isNullOrBlank()) {
+            setStatus("Erro: operador não encontrado. Toque em CONECTAR novamente.")
+            return
+        }
         val i = Intent(this, ScreenShareService::class.java).apply {
             action = ScreenShareService.ACAO_INICIAR
             putExtra("code", code)
             putExtra("data", data)
-            putExtra("server", server)
+            putExtra("server", DEFAULT_SERVER)
             putExtra("op", op)
         }
         ContextCompat.startForegroundService(this, i)
@@ -161,24 +167,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun atualizarBotao() {
-        b.btnPartilhar.text = if (ativo) "PARAR PARTILHA" else "PARTILHAR ECRÃ"
+        b.btnPartilhar.text = if (ativo) "PARAR PARTILHA" else "CONECTAR"
+    }
+
+    private fun atualizarControlo() {
+        val on = acessibilidadeAtiva()
+        b.tvControlo.text = if (on) "Controlo remoto: ATIVO ✓" else "Controlo remoto: desativado"
+        b.btnControlo.text = if (on) "Controlo remoto ativado ✓" else "Ativar controlo remoto (toques)"
+    }
+
+    private fun acessibilidadeAtiva(): Boolean {
+        return try {
+            val s = Settings.Secure.getString(
+                contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            ) ?: return false
+            s.contains("$packageName/$packageName.ControlService")
+        } catch (e: Exception) { false }
     }
 
     private fun setStatus(msg: String) {
         b.tvStatus.text = msg
-    }
-
-    private fun extrair(entrada: String): Pair<String, String> {
-        var server = DEFAULT_SERVER
-        var op = entrada
-        if (entrada.startsWith("http", ignoreCase = true)) {
-            try {
-                val u = Uri.parse(entrada)
-                val porta = if (u.port > 0) ":" + u.port else ""
-                server = u.scheme + "://" + u.host + porta
-                op = u.getQueryParameter("op") ?: ""
-            } catch (_: Exception) { }
-        }
-        return Pair(server, op.trim())
     }
 }

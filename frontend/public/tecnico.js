@@ -7,6 +7,7 @@
   let socket = null;
   let linkId = null;
   let email = null;
+  let role = null;
   let sessoes = [];
 
   let pcs = {};              // sessaoId -> { pc, stream, remotoPronto, iceQueue }
@@ -45,6 +46,7 @@
       token = dados.token;
       email = dados.email;
       linkId = dados.linkId;
+      role = dados.role;
       localStorage.setItem("atlas_tec_token", token);
       iniciarApp();
     } catch (err) {
@@ -63,7 +65,7 @@
   async function iniciarApp() {
     try {
       const eu = await api("/auth/me");
-      email = eu.email; linkId = eu.linkId;
+      email = eu.email; linkId = eu.linkId; role = eu.role;
     } catch (e) { sair(); return; }
 
     el("tela-login").classList.add("oculto");
@@ -71,6 +73,11 @@
     el("lbl-operador").textContent = email;
     const link = location.origin + "/cliente.html?op=" + linkId;
     el("link-cliente").textContent = link;
+
+    if (role === "admin") {
+      el("aba-contas").classList.remove("oculto");
+      carregarContas();
+    }
 
     ligarSocket();
     try { sessoes = await api("/sessoes"); render(); } catch (e) {}
@@ -170,10 +177,61 @@
   document.querySelectorAll(".aba").forEach((a) => a.addEventListener("click", () => {
     document.querySelectorAll(".aba").forEach((x) => x.classList.remove("ativa"));
     a.classList.add("ativa");
-    const s = a.dataset.aba === "sessoes";
-    el("painel-sessoes").classList.toggle("oculto", !s);
-    el("painel-config").classList.toggle("oculto", s);
+    const aba = a.dataset.aba;
+    el("painel-sessoes").classList.toggle("oculto", aba !== "sessoes");
+    el("painel-config").classList.toggle("oculto", aba !== "config");
+    el("painel-contas").classList.toggle("oculto", aba !== "contas");
   }));
+
+  // ---------- Gestão de contas (admin) ----------
+  async function carregarContas() {
+    try {
+      const d = await api("/admin/utilizadores");
+      const contas = d.contas || [];
+      el("conta-total").textContent = contas.length;
+      el("lista-contas").innerHTML = contas.map((c) => {
+        const ehAdmin = c.role === "admin";
+        const linkOp = location.origin + "/cliente.html?op=" + c.linkId;
+        const botao = (ehAdmin || c.email === email)
+          ? `<span class="conta-tag">${ehAdmin ? "ADMIN" : "você"}</span>`
+          : `<button class="btn-apagar-conta" data-apagar-conta="${esc(c.email)}" data-testid="apagar-conta-${esc(c.email)}">Apagar</button>`;
+        return `<div class="conta-linha" data-testid="conta-${esc(c.email)}">
+          <div class="conta-info">
+            <span class="conta-email">${esc(c.email)}</span>
+            <span class="conta-link">${esc(linkOp)}</span>
+          </div>
+          ${botao}
+        </div>`;
+      }).join("");
+    } catch (err) {
+      el("lista-contas").innerHTML = `<div class="vazio">${esc(err.message)}</div>`;
+    }
+  }
+
+  el("form-conta").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    el("conta-msg").textContent = ""; el("conta-erro").textContent = "";
+    try {
+      const r = await api("/admin/utilizadores", {
+        method: "POST",
+        body: JSON.stringify({ email: el("in-novo-email").value, password: el("in-nova-senha").value }),
+      });
+      el("conta-msg").textContent = "Conta criada ✓ — " + r.conta.email;
+      el("form-conta").reset();
+      carregarContas();
+    } catch (err) { el("conta-erro").textContent = err.message; }
+  });
+
+  el("lista-contas").addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-apagar-conta]");
+    if (!btn) return;
+    const alvo = btn.dataset.apagarConta;
+    if (!confirm("Apagar a conta " + alvo + "? Esta ação é irreversível.")) return;
+    try {
+      await api("/admin/utilizadores/" + encodeURIComponent(alvo), { method: "DELETE" });
+      carregarContas();
+    } catch (err) { alert(err.message); }
+  });
 
   el("form-senha").addEventListener("submit", async (e) => {
     e.preventDefault();

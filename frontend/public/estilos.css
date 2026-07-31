@@ -384,3 +384,16 @@ input:focus { outline: none; border-color: var(--verde); }
   .barra { flex-wrap: wrap; gap: 10px; padding: 12px 14px; }
   .conteudo { padding: 20px 14px 50px; }
 }
+
+/* Gestão de contas (admin) */
+.lista-contas { display:flex; flex-direction:column; gap:10px; margin-top:6px; }
+.conta-linha { display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:12px 14px; border:1px solid var(--linha); border-radius:12px; background: rgba(255,255,255,.02); }
+.conta-info { display:flex; flex-direction:column; gap:2px; min-width:0; }
+.conta-email { font-weight:700; }
+.conta-link { font-size:.75rem; opacity:.6; word-break:break-all; }
+.conta-tag { font-size:.7rem; font-weight:700; padding:3px 10px; border-radius:999px;
+  background:#e2f0da; color:#1f7a3d; }
+.btn-apagar-conta { border:1px solid #e0b4b4; background:#fdecec; color:#c0392b;
+  padding:8px 14px; border-radius:10px; font-weight:700; cursor:pointer; transition:background .15s; }
+.btn-apagar-conta:hover { background:#f9dede; }

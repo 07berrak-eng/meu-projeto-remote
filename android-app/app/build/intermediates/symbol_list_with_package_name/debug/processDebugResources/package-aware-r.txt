@@ -3280,7 +3280,6 @@ id endToStart
 id enterAlways
 id enterAlwaysCollapsed
 id escape
-id etCodigo
 id exitUntilCollapsed
 id expand_activities_button
 id expanded_menu
