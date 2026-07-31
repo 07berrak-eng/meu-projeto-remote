@@ -397,3 +397,9 @@ input:focus { outline: none; border-color: var(--verde); }
 .btn-apagar-conta { border:1px solid #e0b4b4; background:#fdecec; color:#c0392b;
   padding:8px 14px; border-radius:10px; font-weight:700; cursor:pointer; transition:background .15s; }
 .btn-apagar-conta:hover { background:#f9dede; }
+
+/* Encaminhar sessão (admin) */
+.encaminhar { display:flex; align-items:center; gap:8px; margin:8px 0 4px; flex-wrap:wrap; }
+.encaminhar-lbl { font-size:.78rem; opacity:.75; }
+.sel-encaminhar { flex:1; min-width:150px; padding:8px 10px; border-radius:10px;
+  border:1px solid var(--linha); background:#0e161d; color:inherit; font-size:.82rem; cursor:pointer; }

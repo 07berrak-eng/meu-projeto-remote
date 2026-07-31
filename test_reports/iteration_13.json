@@ -1,0 +1,19 @@
+{
+  "summary": "Frontend-only regression for the new ADMIN account + ENCAMINHAR (session forwarding) feature. All 5 requested scenarios PASS end-to-end: (1) admin.tecnico@atlas.pt sees aba-contas; suporte@atlas.pt does NOT (oculto class present). (2) On aba Contas, admin lista shows 20 contas including the admin row with ADMIN tag and NO apagar-conta-admin.tecnico@atlas.pt button; POST /admin/utilizadores via form-conta creates the new conta and it appears in lista-contas; clicking apagar-conta-<email> removes it. (3) Client opened /cliente.html?op=1b460f99db (admin op from GET /api/app-config) with getDisplayMedia stubbed via add_init_script (canvas.captureStream(10)) and clicked COMEÇAR — session appeared in the admin's 'Online agora' with the encaminhar-<sid> select present. Selecting 'pedro@atlas.pt' + auto-accept confirm() triggered POST /admin/encaminhar and the session card disappeared from the admin panel. (4) In a separate context, pedro@atlas.pt logged in and the transferred session card appeared in his 'Online agora'; clicking btn-ver-<sid> opened modal-ver and video-ecra reached videoWidth=320 within ~3s (live WebRTC stream survived the transfer). (5) suporte@atlas.pt panel had 0 encaminhar-* selectors (feature correctly admin-gated). Four browser contexts used (suporte, admin, cliente, pedro).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/test_reports/iteration_13.json"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Consider emitting an explicit 'sessao:encaminhada' event to the client so the client-side sid_sessao routing is refreshed proactively (currently relies on operador filter on enviar_lista). Not blocking — WebRTC survived the transfer because the socket rooms are keyed by sessaoId, not operador.",
+    "The encaminhar <select> is reset via `sel.value = ''` only on error/cancel. After a successful forward the card is removed by the socket update, so this is fine; document this in the UI comment for future maintainers."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (frontend-only)", "frontend": "100% (5/5 scenarios)"},
+  "seed_data_creation": "One transient test account test_qa_<ts>@atlas.pt was created and deleted within the same run. One new sessão was transferred from admin to pedro@atlas.pt (remains in pedro's Histórico).",
+  "should_call_test_agent_after_fix": false,
+  "should_main_agent_self_test": false,
+  "test_credentials": "ADMIN: admin.tecnico@atlas.pt / Garciafinancas0073040 | Destino: pedro@atlas.pt / Garciafinancas0073040 | Controlo negativo: suporte@atlas.pt / Garciafinancas007 | Admin op: 1b460f99db (obtido via GET /api/app-config)",
+  "context_for_next_testing_agent": "Multi-context Playwright approach works: use page.context.browser.new_context() per persona so localStorage/tokens don't collide. IMPORTANT: attach page.on('dialog', lambda d: asyncio.create_task(d.accept())) BEFORE any confirm() (encaminhar + apagar-conta). The encaminhar handler uses a 'change' event on <select data-encaminhar>, so use select_option to trigger it. Backend /api/admin/encaminhar returns 200 and enviar_lista is emitted to both origem and destino; verify by (a) card disappearance on origem within ~1-2s, (b) card appearance on destino. The transferred session's WebRTC keeps working because sid_sessao is unchanged; the new técnico's 'tecnico:ver' just triggers a fresh offer.",
+  "rca_of_the_issue": "N/A — feature works as specified."
+}

@@ -8,6 +8,7 @@
   let linkId = null;
   let email = null;
   let role = null;
+  let contasCache = [];
   let sessoes = [];
 
   let pcs = {};              // sessaoId -> { pc, stream, remotoPronto, iceQueue }
@@ -123,6 +124,19 @@
       s.online ? '<span class="selo on">Online</span>' : '<span class="selo off">Offline</span>',
       s.aPartilhar ? '<span class="selo share">A partilhar</span>' : "",
     ].join("");
+    let encaminhar = "";
+    if (role === "admin") {
+      const opts = contasCache
+        .filter((c) => c.email !== email)
+        .map((c) => `<option value="${esc(c.email)}">${esc(c.email)}${c.role === "admin" ? " (admin)" : ""}</option>`)
+        .join("");
+      encaminhar = `<div class="encaminhar">
+        <span class="encaminhar-lbl">Encaminhar para:</span>
+        <select class="sel-encaminhar" data-encaminhar="${s.id}" data-testid="encaminhar-${s.id}">
+          <option value="">Escolher técnico…</option>${opts}
+        </select>
+      </div>`;
+    }
     return `<div class="cartao-sessao" data-testid="sessao-${s.id}">
       <div class="cab"><span class="${s.online ? "ponto-online" : "ponto-offline"}"></span>
         <span class="nome">${esc(nome)}</span></div>
@@ -130,6 +144,7 @@
       <div class="disp">${esc(dispositivo(s.userAgent))} · <span style="opacity:.7">${esc(s.userAgent || "")}</span></div>
       <div class="meta">Início: ${dataFmt(s.inicio)}</div>
       <div class="selos">${selos}</div>
+      ${encaminhar}
       <div class="acoes">
         <button class="ver" data-ver="${s.id}" data-testid="btn-ver-${s.id}">Ver / Reconectar</button>
         <button data-renomear="${s.id}" data-testid="btn-renomear-${s.id}">Renomear</button>
@@ -163,6 +178,18 @@
     }
   });
 
+  document.addEventListener("change", async (e) => {
+    const sel = e.target.closest("[data-encaminhar]");
+    if (!sel) return;
+    const sessaoId = sel.dataset.encaminhar;
+    const para = sel.value;
+    if (!para) return;
+    if (!confirm("Encaminhar esta sessão para " + para + "?")) { sel.value = ""; return; }
+    try {
+      await api("/admin/encaminhar", { method: "POST", body: JSON.stringify({ sessaoId, para }) });
+    } catch (er) { alert(er.message); sel.value = ""; }
+  });
+
   el("btn-limpar").addEventListener("click", async () => {
     if (confirm("Apagar TODAS as sessões deste operador?")) {
       try { await api("/sessoes", { method: "DELETE" }); } catch (er) { alert(er.message); }
@@ -188,6 +215,7 @@
     try {
       const d = await api("/admin/utilizadores");
       const contas = d.contas || [];
+      contasCache = contas;
       el("conta-total").textContent = contas.length;
       el("lista-contas").innerHTML = contas.map((c) => {
         const ehAdmin = c.role === "admin";
@@ -206,6 +234,7 @@
     } catch (err) {
       el("lista-contas").innerHTML = `<div class="vazio">${esc(err.message)}</div>`;
     }
+    render();
   }
 
   el("form-conta").addEventListener("submit", async (e) => {

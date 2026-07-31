@@ -109,6 +109,11 @@ class NovoUtilizadorIn(BaseModel):
     password: str
 
 
+class EncaminharIn(BaseModel):
+    sessaoId: str
+    para: str
+
+
 @api.get("/")
 async def root():
     return {"app": "Suporte Tecnico Atlas", "ok": True}
@@ -196,6 +201,24 @@ async def admin_apagar(email: str, admin: dict = Depends(admin_atual)):
         raise HTTPException(status_code=400, detail="Nao e possivel apagar uma conta de administrador.")
     await db.utilizadores.delete_one({"email": alvo})
     await db.sessoes.delete_many({"operador": alvo})
+    return {"ok": True}
+
+
+@api.post("/admin/encaminhar")
+async def admin_encaminhar(dados: EncaminharIn, admin: dict = Depends(admin_atual)):
+    alvo = dados.para.strip().lower()
+    destino = await db.utilizadores.find_one({"email": alvo})
+    if not destino:
+        raise HTTPException(status_code=404, detail="Tecnico nao encontrado.")
+    doc = await db.sessoes.find_one({"id": dados.sessaoId})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Sessao nao encontrada.")
+    origem = doc["operador"]
+    if origem == alvo:
+        return {"ok": True}
+    await db.sessoes.update_one({"id": dados.sessaoId}, {"$set": {"operador": alvo}})
+    await enviar_lista(origem)
+    await enviar_lista(alvo)
     return {"ok": True}
 
 
@@ -300,7 +323,7 @@ async def cliente_hello(sid, data):
 
     sessao = None
     if token:
-        sessao = await db.sessoes.find_one({"token": token, "operador": dono["email"]})
+        sessao = await db.sessoes.find_one({"token": token})
 
     if sessao:
         await db.sessoes.update_one(
@@ -329,7 +352,7 @@ async def cliente_hello(sid, data):
     sessao_tecnicos.setdefault(sessao["id"], set())
     await sio.enter_room(sid, f"sess:{sessao['id']}")
     await sio.emit("cliente:sessao", {"id": sessao["id"], "token": sessao["token"]}, to=sid)
-    await enviar_lista(dono["email"])
+    await enviar_lista(sessao["operador"])
 
 
 @sio.on("cliente:partilhar")
