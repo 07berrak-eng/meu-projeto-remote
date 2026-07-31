@@ -6,11 +6,15 @@ color atlas_green_light
 color text_dark
 color text_soft
 color white
+id btnControlo
 id btnPartilhar
 id etCodigo
+id tvControlo
 id tvStatus
 layout activity_main
 mipmap ic_launcher
 mipmap ic_launcher_round
+string acessibilidade_desc
 string app_name
 style Theme.AtlasSuporte
+xml accessibility_config

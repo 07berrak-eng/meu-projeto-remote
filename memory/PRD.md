@@ -66,3 +66,11 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - **APK compilado DENTRO do pod**: host é aarch64 mas o aapt2 do SDK é x86_64 → corre via QEMU (qemu-x86_64-static + sysroot glibc x86_64). Tudo cacheado em `/root/android-build`. Script: `/root/build_apk.sh`.
 - APK final: `/app/frontend/public/atlas-suporte.apk` (≈47,5 MB) — download preview: `{preview}/atlas-suporte.apk`; produção após redeploy: `https://remote-assist-21.emergent.host/atlas-suporte.apk`.
 - Estado: COMPILA com sucesso; NÃO testado em dispositivo real (não há emulador aqui). Aguarda teste do utilizador.
+
+## Controlo remoto por toques na app nativa (2026-07-31)
+- Adicionado `ControlService` (AccessibilityService) com `canPerformGestures=true` que executa toques/swipes reais via `dispatchGesture`.
+- `WebRtcSession` subscreve `tecnico:clique {x,y}` (percentagem 0–100 enviada pelo técnico web) e converte para pixéis do ecrã REAL (`currentWindowMetrics`/`getRealMetrics`) → `ControlService.tap`. A captura usa as mesmas dimensões reais para o mapeamento coincidir.
+- UI (`MainActivity`): botão "Ativar controlo remoto (toques)" abre Definições > Acessibilidade; estado mostra ATIVO/desativado (lê `ENABLED_ACCESSIBILITY_SERVICES`).
+- Manifesto: serviço com `BIND_ACCESSIBILITY_SERVICE` + `res/xml/accessibility_config.xml`.
+- APK recompilado (~49,8 MB) em `/app/frontend/public/atlas-suporte.apk` (contém libs WebRTC arm64/armeabi/x86/x86_64). NÃO testado em dispositivo.
+- IMPORTANTE: a keystore debug pode mudar entre builds (o `/root` foi parcialmente limpo), por isso pode ser preciso DESINSTALAR a app antiga antes de instalar a nova (assinaturas diferentes).

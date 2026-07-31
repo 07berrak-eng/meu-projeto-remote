@@ -4,7 +4,11 @@ import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjection
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.util.DisplayMetrics
 import android.util.Log
+import android.view.WindowManager
 import io.socket.client.IO
 import io.socket.client.Socket
 import org.json.JSONArray
@@ -50,6 +54,9 @@ class WebRtcSession(
     private var sessaoToken: String? = null
     private var remoteReady = false
     private val pendingIce = ArrayList<IceCandidate>()
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var screenW = 1080
+    private var screenH = 1920
 
     fun start() {
         sessaoToken = prefs.getString("token_$op", null)
@@ -124,8 +131,10 @@ class WebRtcSession(
         val src = f.createVideoSource(true) // isScreencast
         videoSource = src
         capturer.initialize(helper, context, src.capturerObserver)
-        val dm = context.resources.displayMetrics
-        capturer.startCapture(dm.widthPixels, dm.heightPixels, 15)
+        val (w, h) = tamanhoEcra()
+        screenW = w
+        screenH = h
+        capturer.startCapture(w, h, 15)
         val track = f.createVideoTrack("screen0", src)
         videoTrack = track
 
@@ -216,6 +225,21 @@ class WebRtcSession(
                 }
             } catch (e: Exception) { Log.w(TAG, "ice recv: ${e.message}") }
         }
+        s.on("tecnico:clique") { args ->
+            try {
+                val d = args[0] as JSONObject
+                val xp = d.getDouble("x")
+                val yp = d.getDouble("y")
+                val px = (xp / 100.0 * screenW).toFloat()
+                val py = (yp / 100.0 * screenH).toFloat()
+                val ctrl = ControlService.instance
+                if (ctrl != null) {
+                    mainHandler.post { ctrl.tap(px, py) }
+                } else {
+                    onStatus("O técnico tentou tocar no ecrã. Ative \"Controlo remoto\" na app.", true)
+                }
+            } catch (e: Exception) { Log.w(TAG, "clique: ${e.message}") }
+        }
         s.connect()
     }
 
@@ -257,6 +281,23 @@ class WebRtcSession(
         val cand = IceCandidate(sdpMid, idx, candObj.getString("candidate"))
         if (remoteReady) pc?.addIceCandidate(cand)
         else synchronized(pendingIce) { pendingIce.add(cand) }
+    }
+
+    private fun tamanhoEcra(): Pair<Int, Int> {
+        return try {
+            val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val b = wm.currentWindowMetrics.bounds
+                Pair(b.width(), b.height())
+            } else {
+                val dm = DisplayMetrics()
+                @Suppress("DEPRECATION") wm.defaultDisplay.getRealMetrics(dm)
+                Pair(dm.widthPixels, dm.heightPixels)
+            }
+        } catch (e: Exception) {
+            val dm = context.resources.displayMetrics
+            Pair(dm.widthPixels, dm.heightPixels)
+        }
     }
 
     fun stop() {

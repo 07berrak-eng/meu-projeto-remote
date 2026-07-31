@@ -1,4 +1,1 @@
 cron=3.0pl1-162
-libc6-amd64-cross=2.36-8cross1
-libgcc-s1-amd64-cross=12.2.0-14cross1
-qemu-user-static=1:7.2+dfsg-7+deb12u18+b3

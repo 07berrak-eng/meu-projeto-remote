@@ -3196,6 +3196,7 @@ id bounce
 id bounceBoth
 id bounceEnd
 id bounceStart
+id btnControlo
 id btnPartilhar
 id buttonPanel
 id cache_measures
@@ -3577,6 +3578,7 @@ id transition_position
 id transition_scene_layoutid_cache
 id transition_transform
 id triangle
+id tvControlo
 id tvStatus
 id unchecked
 id uniform
@@ -3825,6 +3827,7 @@ string abc_searchview_description_voice
 string abc_shareactionprovider_share_with
 string abc_shareactionprovider_share_with_application
 string abc_toolbar_collapse_description
+string acessibilidade_desc
 string androidx_startup
 string app_name
 string appbar_scrolling_view_behavior
@@ -5245,3 +5248,4 @@ styleable ViewPager2 android_orientation
 styleable ViewStubCompat android_id android_layout android_inflatedId
 styleable ViewTransition android_id SharedValue SharedValueId clearsTag duration ifTagNotSet ifTagSet motionInterpolator motionTarget onStateTransition pathMotionArc setsTag transitionDisable upDuration viewTransitionMode
 styleable include constraintSet
+xml accessibility_config

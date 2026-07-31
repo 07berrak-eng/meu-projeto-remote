@@ -11,6 +11,7 @@ import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -75,6 +76,15 @@ class MainActivity : AppCompatActivity() {
                 garantirNotificacaoEProjecao()
             }
         }
+
+        b.btnControlo.setOnClickListener {
+            try {
+                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                setStatus("Ative \"Suporte Atlas — Controlo remoto\" na lista e volte à app.")
+            } catch (e: Exception) {
+                setStatus("Abra Definições > Acessibilidade e ative o Suporte Atlas.")
+            }
+        }
     }
 
     override fun onResume() {
@@ -85,6 +95,22 @@ class MainActivity : AppCompatActivity() {
         )
         ativo = ScreenShareService.emExecucao
         atualizarBotao()
+        atualizarControlo()
+    }
+
+    private fun atualizarControlo() {
+        val on = acessibilidadeAtiva()
+        b.tvControlo.text = if (on) "Controlo remoto: ATIVO ✓" else "Controlo remoto: desativado"
+        b.btnControlo.text = if (on) "Controlo remoto ativado ✓" else "Ativar controlo remoto (toques)"
+    }
+
+    private fun acessibilidadeAtiva(): Boolean {
+        return try {
+            val s = Settings.Secure.getString(
+                contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            ) ?: return false
+            s.contains("$packageName/$packageName.ControlService")
+        } catch (e: Exception) { false }
     }
 
     override fun onPause() {
