@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity() {
         mpm = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
         b.btnPartilhar.setOnClickListener {
-            if (ativo) pararServico() else conectar()
+            if (ativo) pararServico() else prosseguir()
         }
 
         b.btnControlo.setOnClickListener {
@@ -90,15 +90,6 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         try { unregisterReceiver(statusReceiver) } catch (_: Exception) {}
-    }
-
-    private fun conectar() {
-        AlertDialog.Builder(this)
-            .setTitle("Começar o suporte")
-            .setMessage("Ao tocar em COMEÇAR vai ativar, em conjunto:\n\n• Partilha do seu ecrã com o técnico\n• Controlo remoto (o técnico pode tocar e deslizar no seu ecrã para o ajudar)\n\nPode parar a qualquer momento.")
-            .setPositiveButton("COMEÇAR") { _, _ -> prosseguir() }
-            .setNegativeButton("Cancelar", null)
-            .show()
     }
 
     private fun prosseguir() {

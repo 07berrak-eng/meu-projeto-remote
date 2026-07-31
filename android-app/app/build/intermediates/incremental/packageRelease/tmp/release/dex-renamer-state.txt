@@ -1,4 +1,4 @@
-#Fri Jul 31 17:28:59 UTC 2026
+#Fri Jul 31 17:53:24 UTC 2026
 base.1=/app/android-app/app/build/intermediates/dex/release/mergeDexRelease/classes2.dex
 path.1=classes2.dex
 base.0=/app/android-app/app/build/intermediates/dex/release/mergeDexRelease/classes.dex
