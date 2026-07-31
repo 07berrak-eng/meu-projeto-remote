@@ -81,3 +81,8 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - Frontend tecnico: aba "Contas" (só admin) com criar/apagar contas e lista (tag ADMIN sem apagar). Testado no browser (criar+apagar OK, 403 p/ não-admin via curl).
 - App Android: removido o campo de link; botão único **CONECTAR** → busca o op em `/api/app-config` e liga sempre à conta admin. APK recompilado (~49,8 MB).
 - Credenciais admin: admin.tecnico@atlas.pt / Garciafinancas0073040.
+
+## Encaminhamento de sessões (central multi-atendente) (2026-07-31b)
+- `POST /api/admin/encaminhar {sessaoId, para}` (admin): muda `sessao.operador` e faz `enviar_lista` à origem e destino. `cliente:hello` passou a recuperar a sessão por `token` (preserva a transferência em reconexões); `enviar_lista` usa o operador atual.
+- Frontend admin: cada cartão de sessão tem um seletor "Encaminhar para" com os técnicos criados; ao escolher, a sessão sai do painel do admin e entra no do técnico destino, que pode Ver/controlar. WebRTC sobrevive à transferência (salas por sessaoId).
+- Testado 100% (iteration_13.json): admin vê aba/seletor, técnico normal não; criar/apagar contas; cliente→admin→encaminhar→pedro (stream ao vivo mantém-se).
