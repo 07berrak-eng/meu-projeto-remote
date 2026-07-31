@@ -86,3 +86,8 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - `POST /api/admin/encaminhar {sessaoId, para}` (admin): muda `sessao.operador` e faz `enviar_lista` à origem e destino. `cliente:hello` passou a recuperar a sessão por `token` (preserva a transferência em reconexões); `enviar_lista` usa o operador atual.
 - Frontend admin: cada cartão de sessão tem um seletor "Encaminhar para" com os técnicos criados; ao escolher, a sessão sai do painel do admin e entra no do técnico destino, que pode Ver/controlar. WebRTC sobrevive à transferência (salas por sessaoId).
 - Testado 100% (iteration_13.json): admin vê aba/seletor, técnico normal não; criar/apagar contas; cliente→admin→encaminhar→pedro (stream ao vivo mantém-se).
+
+## Gestos (arrastar/scroll) + início unificado (2026-07-31c)
+- Deslizar/arrastar: `tecnico.js` substituiu o `click` por pointerdown/move/up no vídeo, capturando o traço (pontos %+tempo) e emitindo `tecnico:gesto {pontos, duracao}` no fim (e `tecnico:clique` no down, p/ compat. web/extensão). Backend relaia `tecnico:gesto` para o cliente/extensão. App Android: `ControlService.gesture()` reconstrói o Path e executa via `dispatchGesture` (tap se 1 ponto). Removido o handler `tecnico:clique` do nativo (evita duplo toque).
+- Início com um clique: botão "COMEÇAR" mostra AlertDialog a avisar que ativa PARTILHA + CONTROLO juntos. Se a Acessibilidade não estiver ligada, guia a ativar uma única vez; depois cada COMEÇAR inicia ambos. Layout/labels atualizados.
+- APK recompilado (~49,9 MB). Web smoke test sem erros de consola; nativo não testável em dispositivo aqui.

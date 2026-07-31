@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import org.json.JSONObject
@@ -92,6 +93,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun conectar() {
+        AlertDialog.Builder(this)
+            .setTitle("Começar o suporte")
+            .setMessage("Ao tocar em COMEÇAR vai ativar, em conjunto:\n\n• Partilha do seu ecrã com o técnico\n• Controlo remoto (o técnico pode tocar e deslizar no seu ecrã para o ajudar)\n\nPode parar a qualquer momento.")
+            .setPositiveButton("COMEÇAR") { _, _ -> prosseguir() }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun prosseguir() {
+        if (!acessibilidadeAtiva()) {
+            AlertDialog.Builder(this)
+                .setTitle("Ativar controlo remoto (uma vez)")
+                .setMessage("Para o técnico poder tocar e deslizar no seu ecrã, ative o \"Suporte Atlas — Controlo remoto\" na lista de Acessibilidade. É só desta vez. Depois volte e toque em COMEÇAR.")
+                .setPositiveButton("Abrir definições") { _, _ ->
+                    try { startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)) } catch (e: Exception) {}
+                }
+                .setNegativeButton("Partilhar só o ecrã") { _, _ -> iniciarLigacao() }
+                .show()
+            return
+        }
+        iniciarLigacao()
+    }
+
+    private fun iniciarLigacao() {
         setStatus("A ligar ao suporte…")
         Thread {
             val op = buscarOp()
@@ -167,7 +192,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun atualizarBotao() {
-        b.btnPartilhar.text = if (ativo) "PARAR PARTILHA" else "CONECTAR"
+        b.btnPartilhar.text = if (ativo) "PARAR PARTILHA" else "COMEÇAR"
     }
 
     private fun atualizarControlo() {

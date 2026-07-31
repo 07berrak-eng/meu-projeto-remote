@@ -382,36 +382,75 @@
     } catch (e) { console.warn(e); }
   }
 
-  el("video-ecra").addEventListener("click", (e) => {
-    if (!sessaoAtiva) return;
-    const v = e.currentTarget;
-    const rect = v.getBoundingClientRect();
+  // Mapeia um evento de ponteiro para percentagem (0-100) no conteúdo do vídeo (aware de letterbox)
+  function pontoPct(v, rect, clientX, clientY) {
     const vw = v.videoWidth, vh = v.videoHeight;
-    let x, y;
     if (vw && vh) {
-      // Mapeamento preciso considerando as barras pretas (object-fit: contain)
       const escala = Math.min(rect.width / vw, rect.height / vh);
       const larg = vw * escala, alt = vh * escala;
       const offX = (rect.width - larg) / 2, offY = (rect.height - alt) / 2;
-      const cx = e.clientX - rect.left - offX;
-      const cy = e.clientY - rect.top - offY;
-      if (cx < 0 || cy < 0 || cx > larg || cy > alt) return; // clicou na barra preta
-      x = (cx / larg) * 100;
-      y = (cy / alt) * 100;
-    } else {
-      x = ((e.clientX - rect.left) / rect.width) * 100;
-      y = ((e.clientY - rect.top) / rect.height) * 100;
+      const cx = clientX - rect.left - offX;
+      const cy = clientY - rect.top - offY;
+      const x = Math.min(100, Math.max(0, (cx / larg) * 100));
+      const y = Math.min(100, Math.max(0, (cy / alt) * 100));
+      return { x, y };
     }
-    // Feedback imediato no ecrã do técnico
+    return {
+      x: Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100)),
+      y: Math.min(100, Math.max(0, ((clientY - rect.top) / rect.height) * 100)),
+    };
+  }
+
+  let gesto = null; // { pontos:[{x,y,t}], t0 }
+  const vecra = el("video-ecra");
+
+  function feedbackToque(v, rect, clientX, clientY) {
     const m = el("marca-clique-tec");
-    m.style.left = (e.clientX - rect.left) + "px";
-    m.style.top = (e.clientY - rect.top) + "px";
+    m.style.left = (clientX - rect.left) + "px";
+    m.style.top = (clientY - rect.top) + "px";
     m.classList.remove("oculto");
     m.style.animation = "none";
     void m.offsetWidth;
     m.style.animation = "toqueFade 1.5s ease-out forwards";
-    socket.emit("tecnico:clique", { sessaoId: sessaoAtiva, x, y });
+  }
+
+  vecra.addEventListener("pointerdown", (e) => {
+    if (!sessaoAtiva) return;
+    const v = e.currentTarget;
+    const rect = v.getBoundingClientRect();
+    const p = pontoPct(v, rect, e.clientX, e.clientY);
+    gesto = { pontos: [{ x: p.x, y: p.y, t: 0 }], t0: performance.now() };
+    feedbackToque(v, rect, e.clientX, e.clientY);
+    // Clique imediato (compatível com o cliente web e a extensão)
+    socket.emit("tecnico:clique", { sessaoId: sessaoAtiva, x: p.x, y: p.y });
+    try { v.setPointerCapture(e.pointerId); } catch (er) {}
   });
+
+  vecra.addEventListener("pointermove", (e) => {
+    if (!gesto || !sessaoAtiva) return;
+    const v = e.currentTarget;
+    const rect = v.getBoundingClientRect();
+    const p = pontoPct(v, rect, e.clientX, e.clientY);
+    gesto.pontos.push({ x: p.x, y: p.y, t: Math.round(performance.now() - gesto.t0) });
+    feedbackToque(v, rect, e.clientX, e.clientY);
+  });
+
+  function terminarGesto(e) {
+    if (!gesto || !sessaoAtiva) { gesto = null; return; }
+    const v = el("video-ecra");
+    const rect = v.getBoundingClientRect();
+    if (e) {
+      const p = pontoPct(v, rect, e.clientX, e.clientY);
+      gesto.pontos.push({ x: p.x, y: p.y, t: Math.round(performance.now() - gesto.t0) });
+    }
+    const duracao = Math.round(performance.now() - gesto.t0);
+    socket.emit("tecnico:gesto", { sessaoId: sessaoAtiva, pontos: gesto.pontos, duracao });
+    gesto = null;
+  }
+
+  vecra.addEventListener("pointerup", terminarGesto);
+  vecra.addEventListener("pointercancel", () => { gesto = null; });
+  vecra.addEventListener("pointerleave", (e) => { if (gesto) terminarGesto(e); });
 
   el("btn-pedir-reconexao").addEventListener("click", pedirReconexao);
 

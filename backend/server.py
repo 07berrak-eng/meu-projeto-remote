@@ -461,6 +461,22 @@ async def tecnico_clique(sid, data):
         await sio.emit("tecnico:clique", payload, to=ext_sid)
 
 
+@sio.on("tecnico:gesto")
+async def tecnico_gesto(sid, data):
+    email = sid_operador.get(sid)
+    sessao_id = (data or {}).get("sessaoId")
+    if not email or not sessao_id:
+        return
+    doc = await db.sessoes.find_one({"id": sessao_id, "operador": email})
+    if not doc:
+        return
+    payload = {"pontos": data.get("pontos") or [], "duracao": data.get("duracao") or 0}
+    if doc.get("sid"):
+        await sio.emit("tecnico:gesto", payload, to=doc["sid"])
+    for ext_sid in list(sessao_extensao.get(sessao_id, set())):
+        await sio.emit("tecnico:gesto", payload, to=ext_sid)
+
+
 @sio.on("extensao:hello")
 async def extensao_hello(sid, data):
     token = (data or {}).get("token")

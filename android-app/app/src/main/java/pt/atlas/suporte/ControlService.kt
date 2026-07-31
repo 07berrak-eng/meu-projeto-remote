@@ -62,4 +62,27 @@ class ControlService : AccessibilityService() {
             Log.w(TAG, "swipe falhou: ${e.message}")
         }
     }
+
+    /** Executa um gesto seguindo um traço de pontos (arrastar/scroll), como o dedo. */
+    fun gesture(xs: FloatArray, ys: FloatArray, durationMs: Long) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return
+        if (xs.isEmpty()) return
+        if (xs.size == 1) { tap(xs[0], ys[0]); return }
+        try {
+            val path = Path()
+            path.moveTo(xs[0], ys[0])
+            var moveu = false
+            for (i in 1 until xs.size) {
+                path.lineTo(xs[i], ys[i])
+                if (xs[i] != xs[0] || ys[i] != ys[0]) moveu = true
+            }
+            if (!moveu) { tap(xs[0], ys[0]); return }
+            val dur = durationMs.coerceIn(80L, 20000L)
+            val stroke = GestureDescription.StrokeDescription(path, 0L, dur)
+            val gesture = GestureDescription.Builder().addStroke(stroke).build()
+            dispatchGesture(gesture, null, null)
+        } catch (e: Exception) {
+            Log.w(TAG, "gesture falhou: ${e.message}")
+        }
+    }
 }

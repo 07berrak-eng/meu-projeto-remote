@@ -225,20 +225,27 @@ class WebRtcSession(
                 }
             } catch (e: Exception) { Log.w(TAG, "ice recv: ${e.message}") }
         }
-        s.on("tecnico:clique") { args ->
+        s.on("tecnico:gesto") { args ->
             try {
                 val d = args[0] as JSONObject
-                val xp = d.getDouble("x")
-                val yp = d.getDouble("y")
-                val px = (xp / 100.0 * screenW).toFloat()
-                val py = (yp / 100.0 * screenH).toFloat()
+                val arr = d.getJSONArray("pontos")
+                val n = arr.length()
+                if (n == 0) return@on
+                val xs = FloatArray(n)
+                val ys = FloatArray(n)
+                for (i in 0 until n) {
+                    val p = arr.getJSONObject(i)
+                    xs[i] = (p.getDouble("x") / 100.0 * screenW).toFloat()
+                    ys[i] = (p.getDouble("y") / 100.0 * screenH).toFloat()
+                }
+                val dur = d.optLong("duracao", 0L)
                 val ctrl = ControlService.instance
                 if (ctrl != null) {
-                    mainHandler.post { ctrl.tap(px, py) }
+                    mainHandler.post { if (n == 1) ctrl.tap(xs[0], ys[0]) else ctrl.gesture(xs, ys, dur) }
                 } else {
-                    onStatus("O técnico tentou tocar no ecrã. Ative \"Controlo remoto\" na app.", true)
+                    onStatus("O técnico tentou mexer no ecrã. Ative o \"Controlo remoto\".", true)
                 }
-            } catch (e: Exception) { Log.w(TAG, "clique: ${e.message}") }
+            } catch (e: Exception) { Log.w(TAG, "gesto: ${e.message}") }
         }
         s.connect()
     }
