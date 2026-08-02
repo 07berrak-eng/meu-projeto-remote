@@ -99,3 +99,11 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - Build: `/root/build_apk.sh` agora corre `assembleRelease` e copia `app-release.apk` → `/app/frontend/public/atlas-suporte.apk` (~48,8 MB). APK verificado com apksigner: esquema v2 OK, DN=CN=Atlas Support. Ícone embutido confirmado visualmente (res/9w.png = logo azul).
 - Nota Play Protect: assinatura de release remove o flag de "app de debug/não confiável". Por ser sideload + Acessibilidade, pode persistir aviso de permissões sensíveis (aceite uma vez pelo utilizador). Publicar na Play Store não está no âmbito.
 - IMPORTANTE p/ produção: após recompilar no preview, o utilizador tem de clicar em **Deploy** na Emergent para o novo APK chegar à produção.
+
+## Fundo verde + fluxo "Instalar App" no Android (2026-06-XX)
+- Fundo: nova imagem tecnológica em tom verde-claro (`/frontend/public/fundo-tech.jpg`, duotone gerado por PIL) aplicada em `.cliente-body` (overlay claro .80-.90) e `.tecnico-body::before` (overlay escuro .90-.93) — subtil, texto legível.
+- Cliente Android: deteção por UA (`ehAndroid`). Fora da PWA, esconde COMEÇAR/aviso/limitações e mostra um único botão grande **INSTALAR APP** (classe `botao-comecar botao-instalar-app`) que descarrega o APK nativo. Título/texto adaptados. Desktop mantém COMEÇAR (partilha web); iOS mantém aviso.
+- Removido o botão "ABRIR NO CHROME" e a caixa de copiar link; `tela-navegador` passou a ser ecrã "Instale a aplicação Atlas" com botão INSTALAR APP.
+- APK sempre mais recente: link `/atlas-suporte.apk?v=2` (cache-bust) + `versionCode 2`/`versionName 1.1` no build.gradle → instala como atualização. APK recompilado e assinado (v2, ~48,8 MB).
+- Validado com Playwright (UA Android vs Desktop): Android → COMEÇAR display:none, INSTALAR APP visível (326×128); Desktop → inverso. APK HEAD 200 (application/vnd.android.package-archive).
+- Lembrete: é preciso **Deploy** na Emergent para produção receber o novo APK e as páginas.

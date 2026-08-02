@@ -20,8 +20,13 @@
 
   const ehIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
     || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const ehAndroid = /android/i.test(navigator.userAgent);
   const emStandalonePWA = window.matchMedia("(display-mode: standalone)").matches
     || window.navigator.standalone === true;
+
+  // APK nativo (mais recente). O parâmetro ?v força o download da versão nova.
+  const APK_URL = "/atlas-suporte.apk?v=2";
+  function baixarApp() { window.location.href = APK_URL; }
 
   let socket, pc, stream;
   let sessaoId = null;
@@ -165,8 +170,6 @@
 
   function mostrarFallbackNavegador() {
     mostrar(telaNavegador);
-    const linkBox = el("nav-link");
-    if (linkBox) linkBox.textContent = urlNoNavegador();
   }
 
   async function comecar() {
@@ -268,43 +271,26 @@
   el("btn-reconectar").addEventListener("click", comecar);
   el("btn-parar").addEventListener("click", pararPartilha);
 
-  const btnAbrirNav = el("btn-abrir-navegador");
-  if (btnAbrirNav) btnAbrirNav.addEventListener("click", () => {
-    window.open(urlNoNavegador(), "_blank", "noopener");
-  });
-  const btnCopiarNav = el("btn-copiar-link");
-  if (btnCopiarNav) btnCopiarNav.addEventListener("click", async () => {
-    try { await navigator.clipboard.writeText(urlNoNavegador()); btnCopiarNav.textContent = "Link copiado ✓"; setTimeout(() => (btnCopiarNav.textContent = "Copiar link"), 1800); } catch (e) {}
-  });
+  // Instalar a app nativa (Android)
+  const btnInstalarApp = el("btn-instalar");
+  if (btnInstalarApp) btnInstalarApp.addEventListener("click", baixarApp);
+  const btnInstalarNav = el("btn-instalar-nav");
+  if (btnInstalarNav) btnInstalarNav.addEventListener("click", baixarApp);
 
-  // ---- PWA: instalação + service worker ----
+  // Em Android (fora da PWA instalada): destacar apenas o botão INSTALAR APP.
+  if (ehAndroid && !emStandalonePWA) {
+    const t = el("inicio-titulo"); if (t) t.innerHTML = "Suporte em direto<br/>com a app Atlas";
+    const p = el("inicio-texto"); if (p) p.textContent = "Instale a aplicação Atlas para o técnico ver o seu ecrã e o ajudar a resolver o problema, com toques guiados em direto.";
+    const bc = el("btn-comecar"); if (bc) bc.classList.add("oculto");
+    if (btnInstalarApp) btnInstalarApp.classList.remove("oculto");
+    const aviso = document.querySelector(".aviso"); if (aviso) aviso.classList.add("oculto");
+    const lim = document.querySelector(".limitacoes"); if (lim) lim.classList.add("oculto");
+  }
+
+  // ---- PWA: service worker (offline/atalho) ----
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     });
   }
-
-  let deferredPrompt = null;
-  const btnInstalar = el("btn-instalar");
-  const emStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    if (btnInstalar && !emStandalone) btnInstalar.classList.remove("oculto");
-  });
-
-  if (btnInstalar) {
-    btnInstalar.addEventListener("click", async () => {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      try { await deferredPrompt.userChoice; } catch (e) {}
-      deferredPrompt = null;
-      btnInstalar.classList.add("oculto");
-    });
-  }
-
-  window.addEventListener("appinstalled", () => {
-    if (btnInstalar) btnInstalar.classList.add("oculto");
-  });
 })();
