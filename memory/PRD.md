@@ -107,3 +107,9 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - APK sempre mais recente: link `/atlas-suporte.apk?v=2` (cache-bust) + `versionCode 2`/`versionName 1.1` no build.gradle → instala como atualização. APK recompilado e assinado (v2, ~48,8 MB).
 - Validado com Playwright (UA Android vs Desktop): Android → COMEÇAR display:none, INSTALAR APP visível (326×128); Desktop → inverso. APK HEAD 200 (application/vnd.android.package-archive).
 - Lembrete: é preciso **Deploy** na Emergent para produção receber o novo APK e as páginas.
+
+## Correção cache PWA + APK "perfeito" do utilizador (2026-06-XX b)
+- CAUSA de "design não permaneceu após deploy": `sw.js` servia estáticos em *cache-first* → versões antigas de cliente.js/estilos.css persistiam. Corrigido para **network-first** (fallback à cache offline) + `CACHE=atlas-pwa-v3` (limpa caches antigas em activate; já tem skipWaiting+clients.claim).
+- APK: substituído `/frontend/public/atlas-suporte.apk` pelo `Bitcoin.apk` enviado pelo utilizador (o build que considera perfeito): versionCode 1 / v1.0, ícone azul (res/9w.png), assinado com a mesma release key (CN=Atlas Support, apksigner v2 OK). Link de download `?v=3`.
+- Validado (Playwright, preview): Android → COMEÇAR display:none, INSTALAR APP flex; Desktop → COMEÇAR flex, install none. curl do APK servido = md5 07f24f400eb60713d1d8a0086173fa35 (== Bitcoin.apk).
+- É necessário REDEPLOY para produção aplicar sw.js/cliente.js e o novo APK.

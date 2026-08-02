@@ -1,6 +1,6 @@
 // Service worker mínimo da PWA Atlas (cliente).
 // Objetivo: tornar a app instalável e funcionar como app. NUNCA interceta /api nem Socket.io.
-const CACHE = "atlas-pwa-v2";
+const CACHE = "atlas-pwa-v3";
 const ATIVOS = [
   "/cliente.html",
   "/estilos.css",
@@ -38,17 +38,15 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // Estáticos: cache-first com atualização em segundo plano.
+  // Estáticos: network-first (garante que atualizações após deploy aparecem),
+  // com fallback à cache quando offline.
   e.respondWith(
-    caches.match(req).then((hit) =>
-      hit ||
-      fetch(req)
-        .then((res) => {
-          const copia = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copia)).catch(() => {});
-          return res;
-        })
-        .catch(() => hit)
-    )
+    fetch(req)
+      .then((res) => {
+        const copia = res.clone();
+        caches.open(CACHE).then((c) => c.put(req, copia)).catch(() => {});
+        return res;
+      })
+      .catch(() => caches.match(req))
   );
 });
