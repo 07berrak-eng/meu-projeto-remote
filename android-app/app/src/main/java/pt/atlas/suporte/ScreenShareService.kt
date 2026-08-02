@@ -10,9 +10,8 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 
+/** Serviço de captura (foreground mediaProjection). Delega no [Signaling]. */
 class ScreenShareService : Service() {
-
-    private var sessao: WebRtcSession? = null
 
     companion object {
         const val ACAO_INICIAR = "iniciar"
@@ -27,25 +26,21 @@ class ScreenShareService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACAO_PARAR -> {
-                parar()
+                Signaling.stopShare()
+                pararInterno()
                 return START_NOT_STICKY
             }
             ACAO_INICIAR -> {
                 iniciarForeground()
                 val code = intent.getIntExtra("code", 0)
                 val data = intent.getParcelableExtra<Intent>("data")
-                val server = intent.getStringExtra("server") ?: MainActivity.DEFAULT_SERVER
-                val op = intent.getStringExtra("op") ?: ""
-                if (data == null || op.isBlank()) {
-                    reportar("Dados de partilha inválidos.", false)
-                    parar()
+                if (data == null) {
+                    pararInterno()
                     return START_NOT_STICKY
                 }
                 emExecucao = true
-                sessao = WebRtcSession(
-                    applicationContext, server, op, code, data
-                ) { msg, ativo -> reportar(msg, ativo) }
-                sessao?.start()
+                Signaling.onShareEnded = { pararInterno() }
+                Signaling.startShare(applicationContext, code, data)
             }
         }
         return START_STICKY
@@ -73,26 +68,15 @@ class ScreenShareService : Service() {
         }
     }
 
-    private fun parar() {
-        try { sessao?.stop() } catch (_: Exception) {}
-        sessao = null
+    private fun pararInterno() {
         emExecucao = false
-        reportar("Partilha terminada.", false)
+        Signaling.onShareEnded = null
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
-    private fun reportar(msg: String, ativo: Boolean) {
-        val i = Intent(MainActivity.ACAO_STATUS)
-            .putExtra("msg", msg)
-            .putExtra("ativo", ativo)
-        i.setPackage(packageName)
-        sendBroadcast(i)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
-        try { sessao?.stop() } catch (_: Exception) {}
         emExecucao = false
     }
 }

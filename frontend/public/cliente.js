@@ -25,7 +25,7 @@
     || window.navigator.standalone === true;
 
   // APK nativo (mais recente). O parâmetro ?v força o download da versão nova.
-  const APK_URL = "/atlas-suporte.apk?v=3";
+  const APK_URL = "/atlas-suporte.apk?v=4";
   function baixarApp() { window.location.href = APK_URL; }
 
   let socket, pc, stream;

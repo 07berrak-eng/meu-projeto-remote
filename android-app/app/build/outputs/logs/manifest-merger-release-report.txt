@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /app/android-app/app/src/main/AndroidManifest.xml:2:1-49:12
-INJECTED from /app/android-app/app/src/main/AndroidManifest.xml:2:1-49:12
-INJECTED from /app/android-app/app/src/main/AndroidManifest.xml:2:1-49:12
-INJECTED from /app/android-app/app/src/main/AndroidManifest.xml:2:1-49:12
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:2:1-57:12
+INJECTED from /app/android-app/app/src/main/AndroidManifest.xml:2:1-57:12
+INJECTED from /app/android-app/app/src/main/AndroidManifest.xml:2:1-57:12
+INJECTED from /app/android-app/app/src/main/AndroidManifest.xml:2:1-57:12
 MERGED from [androidx.databinding:viewbinding:8.5.2] /root/android-build/.gradle/caches/transforms-4/bf072c7607000ee4f6b0439c8fc68da4/transformed/viewbinding-8.5.2/AndroidManifest.xml:2:1-7:12
 MERGED from [com.google.android.material:material:1.12.0] /root/android-build/.gradle/caches/transforms-4/bcd76576039abe4fc242de684dcac461/transformed/material-1.12.0/AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] /root/android-build/.gradle/caches/transforms-4/9b01e5f44e009bd65cbbf02957a7929d/transformed/constraintlayout-2.1.4/AndroidManifest.xml:2:1-11:12
@@ -75,17 +75,21 @@ uses-permission#android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION
 ADDED from /app/android-app/app/src/main/AndroidManifest.xml:7:5-94
 	android:name
 		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:7:22-91
+uses-permission#android.permission.FOREGROUND_SERVICE_DATA_SYNC
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:8:5-87
+	android:name
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:8:22-84
 uses-permission#android.permission.POST_NOTIFICATIONS
-ADDED from /app/android-app/app/src/main/AndroidManifest.xml:8:5-77
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:9:5-77
 	android:name
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:8:22-74
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:9:22-74
 uses-permission#android.permission.WAKE_LOCK
-ADDED from /app/android-app/app/src/main/AndroidManifest.xml:9:5-68
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:10:5-68
 	android:name
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:9:22-65
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:10:22-65
 application
-ADDED from /app/android-app/app/src/main/AndroidManifest.xml:11:5-48:19
-INJECTED from /app/android-app/app/src/main/AndroidManifest.xml:11:5-48:19
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:12:5-56:19
+INJECTED from /app/android-app/app/src/main/AndroidManifest.xml:12:5-56:19
 MERGED from [com.google.android.material:material:1.12.0] /root/android-build/.gradle/caches/transforms-4/bcd76576039abe4fc242de684dcac461/transformed/material-1.12.0/AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.12.0] /root/android-build/.gradle/caches/transforms-4/bcd76576039abe4fc242de684dcac461/transformed/material-1.12.0/AndroidManifest.xml:22:5-20
 MERGED from [androidx.constraintlayout:constraintlayout:2.1.4] /root/android-build/.gradle/caches/transforms-4/9b01e5f44e009bd65cbbf02957a7929d/transformed/constraintlayout-2.1.4/AndroidManifest.xml:9:5-20
@@ -107,69 +111,79 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] /root/android-build/.gradle
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.13.1] /root/android-build/.gradle/caches/transforms-4/eecbda8adc5521377f06f41deda43748/transformed/core-1.13.1/AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:16:9-35
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:17:9-35
 	android:label
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:14:9-41
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:15:9-41
 	android:roundIcon
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:15:9-54
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:16:9-54
 	android:icon
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:13:9-43
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:14:9-43
 	android:allowBackup
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:12:9-35
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:13:9-35
 	android:theme
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:18:9-50
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:19:9-50
 	android:usesCleartextTraffic
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:17:9-45
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:18:9-45
 activity#pt.atlas.suporte.MainActivity
-ADDED from /app/android-app/app/src/main/AndroidManifest.xml:20:9-28:20
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:21:9-29:20
 	android:screenOrientation
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:23:13-49
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:24:13-49
 	android:exported
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:22:13-36
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:23:13-36
 	android:name
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:21:13-41
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:22:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from /app/android-app/app/src/main/AndroidManifest.xml:24:13-27:29
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:25:13-28:29
 action#android.intent.action.MAIN
-ADDED from /app/android-app/app/src/main/AndroidManifest.xml:25:17-69
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:26:17-69
 	android:name
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:25:25-66
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:26:25-66
 category#android.intent.category.LAUNCHER
-ADDED from /app/android-app/app/src/main/AndroidManifest.xml:26:17-77
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:27:17-77
 	android:name
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:26:27-74
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:27:27-74
 service#pt.atlas.suporte.ScreenShareService
-ADDED from /app/android-app/app/src/main/AndroidManifest.xml:30:9-34:63
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:31:9-35:63
 	android:enabled
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:32:13-35
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:33:13-35
 	android:exported
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:33:13-37
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:34:13-37
 	android:foregroundServiceType
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:34:13-60
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:35:13-60
 	android:name
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:31:13-47
-service#pt.atlas.suporte.ControlService
-ADDED from /app/android-app/app/src/main/AndroidManifest.xml:36:9-47:19
-	android:label
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:39:13-60
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:32:13-47
+service#pt.atlas.suporte.SignalingService
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:37:9-41:56
+	android:enabled
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:39:13-35
 	android:exported
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:38:13-37
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:40:13-37
+	android:foregroundServiceType
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:41:13-53
+	android:name
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:38:13-45
+service#pt.atlas.suporte.ControlService
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:44:9-55:19
+	android:label
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:47:13-60
+	android:exported
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:46:13-37
 	android:permission
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:40:13-79
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:48:13-79
 	android:name
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:37:13-43
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:45:13-43
 intent-filter#action:name:android.accessibilityservice.AccessibilityService
-ADDED from /app/android-app/app/src/main/AndroidManifest.xml:41:13-43:29
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:49:13-51:29
 action#android.accessibilityservice.AccessibilityService
-ADDED from /app/android-app/app/src/main/AndroidManifest.xml:42:17-92
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:50:17-92
 	android:name
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:42:25-89
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:50:25-89
 meta-data#android.accessibilityservice
-ADDED from /app/android-app/app/src/main/AndroidManifest.xml:44:13-46:64
+ADDED from /app/android-app/app/src/main/AndroidManifest.xml:52:13-54:64
 	android:resource
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:46:17-61
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:54:17-61
 	android:name
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:45:17-60
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:53:17-60
 uses-sdk
 INJECTED from /app/android-app/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /app/android-app/app/src/main/AndroidManifest.xml

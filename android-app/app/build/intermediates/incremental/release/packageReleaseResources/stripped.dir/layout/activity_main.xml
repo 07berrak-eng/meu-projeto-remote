@@ -78,8 +78,28 @@
                     android:text="Pronto para começar."
                     android:textColor="@color/text_soft"
                     android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tvLigacao"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Não ligado. Toque em COMEÇAR para ligar."
+                    android:textColor="@color/atlas_green"
+                    android:textSize="12sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDesligar"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:visibility="gone"
+            android:text="Terminar ligação ao suporte"
+            android:textColor="@color/text_soft" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnControlo"

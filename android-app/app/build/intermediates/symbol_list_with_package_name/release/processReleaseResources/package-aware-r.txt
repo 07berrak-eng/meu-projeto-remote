@@ -3197,6 +3197,7 @@ id bounceBoth
 id bounceEnd
 id bounceStart
 id btnControlo
+id btnDesligar
 id btnPartilhar
 id buttonPanel
 id cache_measures
@@ -3578,6 +3579,7 @@ id transition_scene_layoutid_cache
 id transition_transform
 id triangle
 id tvControlo
+id tvLigacao
 id tvStatus
 id unchecked
 id uniform

@@ -7,8 +7,10 @@ color text_dark
 color text_soft
 color white
 id btnControlo
+id btnDesligar
 id btnPartilhar
 id tvControlo
+id tvLigacao
 id tvStatus
 layout activity_main
 mipmap ic_launcher

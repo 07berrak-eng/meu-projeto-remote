@@ -25,20 +25,29 @@ public final class ActivityMainBinding implements ViewBinding {
   public final MaterialButton btnControlo;
 
   @NonNull
+  public final MaterialButton btnDesligar;
+
+  @NonNull
   public final Button btnPartilhar;
 
   @NonNull
   public final TextView tvControlo;
 
   @NonNull
+  public final TextView tvLigacao;
+
+  @NonNull
   public final TextView tvStatus;
 
   private ActivityMainBinding(@NonNull ScrollView rootView, @NonNull MaterialButton btnControlo,
-      @NonNull Button btnPartilhar, @NonNull TextView tvControlo, @NonNull TextView tvStatus) {
+      @NonNull MaterialButton btnDesligar, @NonNull Button btnPartilhar,
+      @NonNull TextView tvControlo, @NonNull TextView tvLigacao, @NonNull TextView tvStatus) {
     this.rootView = rootView;
     this.btnControlo = btnControlo;
+    this.btnDesligar = btnDesligar;
     this.btnPartilhar = btnPartilhar;
     this.tvControlo = tvControlo;
+    this.tvLigacao = tvLigacao;
     this.tvStatus = tvStatus;
   }
 
@@ -75,6 +84,12 @@ public final class ActivityMainBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.btnDesligar;
+      MaterialButton btnDesligar = ViewBindings.findChildViewById(rootView, id);
+      if (btnDesligar == null) {
+        break missingId;
+      }
+
       id = R.id.btnPartilhar;
       Button btnPartilhar = ViewBindings.findChildViewById(rootView, id);
       if (btnPartilhar == null) {
@@ -87,14 +102,20 @@ public final class ActivityMainBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.tvLigacao;
+      TextView tvLigacao = ViewBindings.findChildViewById(rootView, id);
+      if (tvLigacao == null) {
+        break missingId;
+      }
+
       id = R.id.tvStatus;
       TextView tvStatus = ViewBindings.findChildViewById(rootView, id);
       if (tvStatus == null) {
         break missingId;
       }
 
-      return new ActivityMainBinding((ScrollView) rootView, btnControlo, btnPartilhar, tvControlo,
-          tvStatus);
+      return new ActivityMainBinding((ScrollView) rootView, btnControlo, btnDesligar, btnPartilhar,
+          tvControlo, tvLigacao, tvStatus);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

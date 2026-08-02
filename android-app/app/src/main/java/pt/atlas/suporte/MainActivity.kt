@@ -31,15 +31,16 @@ class MainActivity : AppCompatActivity() {
         const val DEFAULT_SERVER = "https://remote-assist-21.emergent.host"
         const val ACAO_STATUS = "pt.atlas.suporte.STATUS"
         const val PREFS = "atlas_prefs"
+        const val EXTRA_RECONNECT = "reconectar"
     }
 
     private val projectionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
-            iniciarServico(result.resultCode, result.data!!)
+            iniciarCaptura(result.resultCode, result.data!!)
         } else {
-            setStatus("Autorização de partilha recusada. Toque em CONECTAR para tentar.")
+            setStatus("Autorização de partilha recusada. Continua ligado — toque em COMEÇAR para tentar.")
         }
     }
 
@@ -63,9 +64,8 @@ class MainActivity : AppCompatActivity() {
         mpm = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
 
         b.btnPartilhar.setOnClickListener {
-            if (ativo) pararServico() else prosseguir()
+            if (ativo) pararPartilha() else prosseguir()
         }
-
         b.btnControlo.setOnClickListener {
             try {
                 startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
@@ -74,6 +74,15 @@ class MainActivity : AppCompatActivity() {
                 setStatus("Abra Definições > Acessibilidade e ative o Suporte Atlas.")
             }
         }
+        b.btnDesligar.setOnClickListener { desligarTudo() }
+
+        tratarReconexao(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        tratarReconexao(intent)
     }
 
     override fun onResume() {
@@ -85,11 +94,21 @@ class MainActivity : AppCompatActivity() {
         ativo = ScreenShareService.emExecucao
         atualizarBotao()
         atualizarControlo()
+        atualizarLigacao()
     }
 
     override fun onPause() {
         super.onPause()
         try { unregisterReceiver(statusReceiver) } catch (_: Exception) {}
+    }
+
+    /** Pedido de reconexão vindo da notificação: retoma a partilha diretamente. */
+    private fun tratarReconexao(intent: Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_RECONNECT, false) == true) {
+            intent.removeExtra(EXTRA_RECONNECT)
+            setStatus("O técnico pediu para reconectar. A preparar a partilha…")
+            prosseguir()
+        }
     }
 
     private fun prosseguir() {
@@ -109,6 +128,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun iniciarLigacao() {
         setStatus("A ligar ao suporte…")
+        val opCache = opAtual ?: Signaling.op.ifBlank { null }
+        if (opCache != null) {
+            opAtual = opCache
+            ligarSinalizacao(opCache)
+            garantirNotificacaoEProjecao()
+            return
+        }
         Thread {
             val op = buscarOp()
             runOnUiThread {
@@ -116,13 +142,23 @@ class MainActivity : AppCompatActivity() {
                     setStatus("Não foi possível ligar ao servidor. Verifique a Internet e tente novamente.")
                 } else {
                     opAtual = op
+                    ligarSinalizacao(op)
                     garantirNotificacaoEProjecao()
                 }
             }
         }.start()
     }
 
-    /** Obtém o operador (conta admin) ao qual a app liga automaticamente. */
+    /** Garante que o serviço persistente (socket) está a correr. */
+    private fun ligarSinalizacao(op: String) {
+        val i = Intent(this, SignalingService::class.java).apply {
+            action = SignalingService.ACAO_LIGAR
+            putExtra("server", DEFAULT_SERVER)
+            putExtra("op", op)
+        }
+        ContextCompat.startForegroundService(this, i)
+    }
+
     private fun buscarOp(): String? {
         return try {
             val con = URL("$DEFAULT_SERVER/api/app-config").openConnection() as HttpURLConnection
@@ -153,18 +189,11 @@ class MainActivity : AppCompatActivity() {
         projectionLauncher.launch(mpm.createScreenCaptureIntent())
     }
 
-    private fun iniciarServico(code: Int, data: Intent) {
-        val op = opAtual
-        if (op.isNullOrBlank()) {
-            setStatus("Erro: operador não encontrado. Toque em CONECTAR novamente.")
-            return
-        }
+    private fun iniciarCaptura(code: Int, data: Intent) {
         val i = Intent(this, ScreenShareService::class.java).apply {
             action = ScreenShareService.ACAO_INICIAR
             putExtra("code", code)
             putExtra("data", data)
-            putExtra("server", DEFAULT_SERVER)
-            putExtra("op", op)
         }
         ContextCompat.startForegroundService(this, i)
         ativo = true
@@ -172,18 +201,38 @@ class MainActivity : AppCompatActivity() {
         atualizarBotao()
     }
 
-    private fun pararServico() {
+    private fun pararPartilha() {
         val i = Intent(this, ScreenShareService::class.java).apply {
             action = ScreenShareService.ACAO_PARAR
         }
         startService(i)
         ativo = false
-        setStatus("Partilha terminada.")
+        setStatus("Partilha parada. Continua ligado — o técnico pode pedir reconexão.")
         atualizarBotao()
+    }
+
+    private fun desligarTudo() {
+        val p = Intent(this, ScreenShareService::class.java).apply { action = ScreenShareService.ACAO_PARAR }
+        startService(p)
+        val d = Intent(this, SignalingService::class.java).apply { action = SignalingService.ACAO_DESLIGAR }
+        startService(d)
+        ativo = false
+        setStatus("Desligado do suporte. Toque em COMEÇAR para voltar a ligar.")
+        atualizarBotao()
+        atualizarLigacao()
     }
 
     private fun atualizarBotao() {
         b.btnPartilhar.text = if (ativo) "PARAR PARTILHA" else "COMEÇAR"
+    }
+
+    private fun atualizarLigacao() {
+        val ligado = SignalingService.ativo
+        b.btnDesligar.visibility = if (ligado) android.view.View.VISIBLE else android.view.View.GONE
+        b.tvLigacao.text = if (ligado)
+            "Ligado ao suporte ✓ — pode reconectar a qualquer momento"
+        else
+            "Não ligado. Toque em COMEÇAR para ligar."
     }
 
     private fun atualizarControlo() {

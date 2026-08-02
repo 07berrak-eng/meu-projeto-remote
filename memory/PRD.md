@@ -113,3 +113,17 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - APK: substituído `/frontend/public/atlas-suporte.apk` pelo `Bitcoin.apk` enviado pelo utilizador (o build que considera perfeito): versionCode 1 / v1.0, ícone azul (res/9w.png), assinado com a mesma release key (CN=Atlas Support, apksigner v2 OK). Link de download `?v=3`.
 - Validado (Playwright, preview): Android → COMEÇAR display:none, INSTALAR APP flex; Desktop → COMEÇAR flex, install none. curl do APK servido = md5 07f24f400eb60713d1d8a0086173fa35 (== Bitcoin.apk).
 - É necessário REDEPLOY para produção aplicar sw.js/cliente.js e o novo APK.
+
+## Reconexão nativa Android (ligação persistente) (2026-06-XX c)
+- OBJETIVO: técnico clica "Ver/Reconectar" ou "Pedir reconexão" no CRM → o telemóvel (app instalada) recebe o pedido mesmo depois de ter parado a partilha, e o utilizador só tem de tocar 1x (o prompt de captura do Android é inevitável).
+- Arquitetura nova (app Kotlin):
+  - `Signaling` (singleton): UM socket.io persistente. hello+token, guarda online, encaminha tecnico:pronto/webrtc:*/tecnico:gesto para a captura, e `cliente:pedir-reconexao` → callback.
+  - `WebRtcCapture`: só captura+WebRTC, usa o socket do Signaling (não é dono do socket). MediaProjection.Callback.onStop → handleProjectionStopped (emite partilhar=false, mantém socket).
+  - `SignalingService` (foreground `dataSync`, permissão FOREGROUND_SERVICE_DATA_SYNC): mantém o socket vivo mesmo SEM partilhar; ao receber pedir-reconexao mostra notificação de ALTA prioridade "Reconectar ao técnico" (toque → MainActivity com EXTRA_RECONNECT → pede projeção → retoma). Se já estiver a partilhar, recria a oferta.
+  - `ScreenShareService` (foreground `mediaProjection`): só a captura; PARAR mantém a ligação (socket) viva.
+  - MainActivity: COMEÇAR liga o SignalingService (socket) + pede projeção; PARAR PARTILHA mantém ligado; botão "Terminar ligação" (desligarTudo); trata EXTRA_RECONNECT.
+  - Removido `WebRtcSession.kt`.
+- Backend: SEM alterações (já reencaminha `cliente:pedir-reconexao` para doc.sid; agora o sid mantém-se por o socket ficar vivo).
+- APK v1.2 (versionCode 3) recompilado e assinado (apksigner v2 OK, ~48,8 MB). Link download `?v=4`.
+- TESTES: build Kotlin OK (compila), web/backend verificados (app-config 200, APK 200, cliente.js sintaxe OK). Comportamento em tempo de execução no dispositivo NÃO testável no pod (sem emulador Android) — validar no telemóvel.
+- Requer REDEPLOY + reinstalar a app (novo APK) no telemóvel.
