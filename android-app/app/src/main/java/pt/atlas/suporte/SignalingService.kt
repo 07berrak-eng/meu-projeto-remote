@@ -44,10 +44,12 @@ class SignalingService : Service() {
                 iniciarForeground()
                 Signaling.onStatus = { msg, sh -> reportar(msg, sh) }
                 Signaling.onReconnectRequest = {
-                    if (Signaling.sharing) {
-                        // Já está a partilhar: basta recriar a oferta.
-                        Signaling.capture?.criarOferta()
+                    val cap = Signaling.capture
+                    if (cap != null && cap.projectionAlive) {
+                        // Projeção ainda viva: reconecta automaticamente, SEM pedir autorização.
+                        cap.reconectarPeer()
                     } else {
+                        // Projeção perdida (ecrã bloqueou/sistema parou): precisa re-autorizar 1x.
                         mostrarNotifReconexao()
                     }
                 }

@@ -8,10 +8,13 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 
 /** Serviço de captura (foreground mediaProjection). Delega no [Signaling]. */
 class ScreenShareService : Service() {
+
+    private var wakeLock: PowerManager.WakeLock? = null
 
     companion object {
         const val ACAO_INICIAR = "iniciar"
@@ -39,6 +42,7 @@ class ScreenShareService : Service() {
                     return START_NOT_STICKY
                 }
                 emExecucao = true
+                adquirirWakeLock()
                 Signaling.onShareEnded = { pararInterno() }
                 Signaling.startShare(applicationContext, code, data)
             }
@@ -68,9 +72,20 @@ class ScreenShareService : Service() {
         }
     }
 
+    private fun adquirirWakeLock() {
+        try {
+            if (wakeLock == null) {
+                val pm = getSystemService(POWER_SERVICE) as PowerManager
+                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "atlas:partilha")
+            }
+            if (wakeLock?.isHeld != true) wakeLock?.acquire(3 * 60 * 60 * 1000L)
+        } catch (_: Exception) {}
+    }
+
     private fun pararInterno() {
         emExecucao = false
         Signaling.onShareEnded = null
+        try { if (wakeLock?.isHeld == true) wakeLock?.release() } catch (_: Exception) {}
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }

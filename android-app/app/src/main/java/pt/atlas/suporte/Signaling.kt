@@ -98,7 +98,7 @@ object Signaling {
             val msg = (args.getOrNull(0) as? JSONObject)?.optString("msg") ?: "Erro do servidor."
             status("Erro: $msg", false)
         }
-        s.on("tecnico:pronto") { capture?.criarOferta() }
+        s.on("tecnico:pronto") { capture?.reconectarPeer() }
         s.on("webrtc:answer") { args ->
             try { capture?.aplicarAnswer((args[0] as JSONObject).getJSONObject("sdp")) }
             catch (e: Exception) { Log.w(TAG, "answer: ${e.message}") }

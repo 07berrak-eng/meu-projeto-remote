@@ -31,7 +31,10 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Captura de ecrã + WebRTC. NÃO é dona do socket — usa o socket persistente do [Signaling].
+ * Captura de ecrã (MediaProjection) + WebRTC.
+ * A PROJEÇÃO e a track de vídeo mantêm-se VIVAS entre reconexões — só a PeerConnection
+ * é recriada. Assim, reconectar NÃO volta a pedir autorização ao Android.
+ * Usa o socket persistente do [Signaling].
  */
 class WebRtcCapture(
     private val context: Context,
@@ -51,18 +54,31 @@ class WebRtcCapture(
     private var videoTrack: VideoTrack? = null
     private var screenCapturer: ScreenCapturerAndroid? = null
     private var surfaceHelper: SurfaceTextureHelper? = null
+    private var iceServers: List<PeerConnection.IceServer> = emptyList()
+
+    @Volatile var projectionAlive = false
+        private set
+    @Volatile private var captureReady = false
+    @Volatile private var pedidoOfertaPendente = false
 
     private var remoteReady = false
     private val pendingIce = ArrayList<IceCandidate>()
-    private val mainHandler = Handler(Looper.getMainLooper())
+    private val h = Handler(Looper.getMainLooper())
     @Volatile var screenW = 1080
     @Volatile var screenH = 1920
 
     fun start() {
         Thread {
             try {
-                val ice = buscarIceServers()
-                iniciarWebRtc(ice)
+                iceServers = buscarIceServers()
+                iniciarCaptura()
+                captureReady = true
+                projectionAlive = true
+                onStatus("A partilhar o ecrã. O técnico já o pode ajudar.", true)
+                if (pedidoOfertaPendente) {
+                    pedidoOfertaPendente = false
+                    reconectarPeer()
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "start falhou", e)
                 onStatus("Falha ao iniciar a partilha: ${e.message}", false)
@@ -103,7 +119,8 @@ class WebRtcCapture(
         return servers
     }
 
-    private fun iniciarWebRtc(iceServers: List<PeerConnection.IceServer>) {
+    /** Inicializa a fábrica + projeção + track (uma vez). NÃO cria PeerConnection. */
+    private fun iniciarCaptura() {
         PeerConnectionFactory.initialize(
             PeerConnectionFactory.InitializationOptions.builder(context).createInitializationOptions()
         )
@@ -119,7 +136,8 @@ class WebRtcCapture(
 
         val capturer = ScreenCapturerAndroid(projectionData, object : MediaProjection.Callback() {
             override fun onStop() {
-                mainHandler.post { onProjectionStopped() }
+                projectionAlive = false
+                h.post { onProjectionStopped() }
             }
         })
         screenCapturer = capturer
@@ -128,18 +146,31 @@ class WebRtcCapture(
         val src = f.createVideoSource(true) // isScreencast
         videoSource = src
         capturer.initialize(helper, context, src.capturerObserver)
-        val (w, h) = tamanhoEcra()
+        val (w, hgt) = tamanhoEcra()
         screenW = w
-        screenH = h
-        capturer.startCapture(w, h, 15)
-        val track = f.createVideoTrack("screen0", src)
-        videoTrack = track
+        screenH = hgt
+        capturer.startCapture(w, hgt, 15)
+        videoTrack = f.createVideoTrack("screen0", src)
+    }
 
-        val config = PeerConnection.RTCConfiguration(iceServers)
-        config.sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
-        config.continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY
-        pc = f.createPeerConnection(config, pcObserver)
-        pc?.addTrack(track, listOf("stream0"))
+    /** (Re)cria a PeerConnection e envia uma nova oferta — SEM tocar na projeção. */
+    fun reconectarPeer() {
+        if (!captureReady) { pedidoOfertaPendente = true; return }
+        h.post {
+            try {
+                fecharPeer()
+                remoteReady = false
+                synchronized(pendingIce) { pendingIce.clear() }
+                val config = PeerConnection.RTCConfiguration(iceServers)
+                config.sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
+                config.continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY
+                val f = factory ?: return@post
+                val newPc = f.createPeerConnection(config, pcObserver) ?: return@post
+                pc = newPc
+                videoTrack?.let { newPc.addTrack(it, listOf("stream0")) }
+                criarOferta()
+            } catch (e: Exception) { Log.w(TAG, "reconectarPeer: ${e.message}") }
+        }
     }
 
     private val pcObserver = object : PeerConnection.Observer {
@@ -150,11 +181,8 @@ class WebRtcCapture(
                     .put("sdpMid", c.sdpMid)
                     .put("sdpMLineIndex", c.sdpMLineIndex)
                 socket.emit("webrtc:ice", JSONObject().put("candidate", cJson))
-            } catch (e: Exception) {
-                Log.w(TAG, "enviar ice: ${e.message}")
-            }
+            } catch (e: Exception) { Log.w(TAG, "enviar ice: ${e.message}") }
         }
-
         override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {
             when (state) {
                 PeerConnection.IceConnectionState.CONNECTED,
@@ -165,7 +193,6 @@ class WebRtcCapture(
                 else -> {}
             }
         }
-
         override fun onSignalingChange(p0: PeerConnection.SignalingState?) {}
         override fun onIceConnectionReceivingChange(p0: Boolean) {}
         override fun onIceGatheringChange(p0: PeerConnection.IceGatheringState?) {}
@@ -177,7 +204,7 @@ class WebRtcCapture(
         override fun onAddTrack(p0: RtpReceiver?, p1: Array<out MediaStream>?) {}
     }
 
-    fun criarOferta() {
+    private fun criarOferta() {
         val c = MediaConstraints()
         pc?.createOffer(object : SdpObserver {
             override fun onCreateSuccess(desc: SessionDescription) {
@@ -234,13 +261,20 @@ class WebRtcCapture(
         }
     }
 
+    private fun fecharPeer() {
+        try { pc?.close() } catch (_: Exception) {}
+        try { pc?.dispose() } catch (_: Exception) {}
+        pc = null
+    }
+
     fun stop() {
+        projectionAlive = false
+        captureReady = false
+        fecharPeer()
         try { screenCapturer?.stopCapture() } catch (_: Exception) {}
         try { screenCapturer?.dispose() } catch (_: Exception) {}
         try { videoSource?.dispose() } catch (_: Exception) {}
         try { surfaceHelper?.dispose() } catch (_: Exception) {}
-        try { pc?.close() } catch (_: Exception) {}
-        try { pc?.dispose() } catch (_: Exception) {}
         try { factory?.dispose() } catch (_: Exception) {}
         try { eglBase?.release() } catch (_: Exception) {}
     }
