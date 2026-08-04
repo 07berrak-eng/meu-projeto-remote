@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8" />
+<style>
+  @page { size: A4; margin: 20mm 16mm; @bottom-center { content: "Atlas — Prompt de Replicação (Partilha de Ecrã) · página " counter(page) " de " counter(pages); font-size: 9px; color: #6b7c72; } }
+  * { box-sizing: border-box; }
+  body { font-family: "Helvetica Neue", Arial, sans-serif; color: #16261d; font-size: 11.5px; line-height: 1.5; }
+  h1 { font-size: 26px; color: #14361f; margin: 0 0 4px; }
+  h2 { font-size: 16px; color: #1f7a3d; border-bottom: 2px solid #cfe6c4; padding-bottom: 4px; margin: 22px 0 8px; }
+  h3 { font-size: 13px; color: #14361f; margin: 14px 0 4px; }
+  p { margin: 6px 0; }
+  code, pre { font-family: "Courier New", monospace; background: #0f1720; color: #d8f3d0; border-radius: 6px; }
+  code { padding: 1px 5px; font-size: 10.5px; }
+  pre { padding: 12px 14px; font-size: 9.8px; line-height: 1.45; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+  ul, ol { margin: 6px 0 6px 18px; }
+  li { margin: 3px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 10.5px; }
+  th, td { border: 1px solid #cfe6c4; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #e9f7ec; color: #14361f; }
+  .capa { text-align: center; padding: 60px 0 30px; }
+  .capa .badge { display: inline-block; background: #1f7a3d; color: #fff; padding: 6px 16px; border-radius: 999px; font-weight: 700; letter-spacing: .5px; font-size: 11px; }
+  .capa h1 { font-size: 34px; margin-top: 22px; }
+  .capa p { color: #3d5747; font-size: 13px; }
+  .nota { background: #fff6e2; border: 1px solid #f2dfa8; color: #7a5a12; padding: 10px 12px; border-radius: 10px; margin: 10px 0; }
+  .ok { background: #e9f7ec; border: 1px solid #cfe6c4; color: #1f5a33; padding: 10px 12px; border-radius: 10px; margin: 10px 0; }
+  .warn { background: #fdeaea; border: 1px solid #f2c2c2; color: #a12626; padding: 10px 12px; border-radius: 10px; margin: 10px 0; }
+  .kv { font-size: 10.5px; }
+  hr { border: none; border-top: 1px dashed #cfe6c4; margin: 18px 0; }
+  .small { font-size: 10px; color: #6b7c72; }
+  .pill { display:inline-block; background:#e9f7ec; border:1px solid #cfe6c4; color:#1f7a3d; border-radius:999px; padding:1px 8px; font-size:10px; margin-right:4px;}
+</style>
+</head>
+<body>
+
+<div class="capa">
+  <span class="badge">PROMPT DE REPLICAÇÃO — IA</span>
+  <h1>Sistema de Partilha de Ecrã em Direto<br/>"Atlas" (Computador + App Android)</h1>
+  <p>Especificação técnica completa, do início ao fim, para uma IA construir de raiz<br/>um sistema de suporte remoto <strong>focado exclusivamente na PARTILHA DE ECRÃ</strong>.</p>
+  <p class="small">Âmbito: cliente partilha o ecrã (PC via navegador e telemóvel via app Android nativa); o técnico vê o ecrã num painel (CRM). SEM controlo remoto / SEM co-browsing.</p>
+</div>
+
+<h2>0. Como usar este documento</h2>
+<p>Este documento é um <strong>prompt de sistema</strong>. Entrega-o a uma IA de programação full-stack (agente de código) e pede-lhe para <em>implementar tudo o que está descrito</em>, respeitando as tecnologias, contratos de API, eventos de sinalização e critérios de aceitação. Tudo o que não estiver aqui pode ser decidido pela IA desde que cumpra os critérios de aceitação da Secção 12.</p>
+<div class="warn"><strong>Âmbito restrito (importante):</strong> Este sistema serve <u>apenas para VER o ecrã do cliente</u>. NÃO inclui controlo remoto, toques simulados, gestos, círculo vermelho, nem Serviços de Acessibilidade. Se a IA for tentada a acrescentar controlo remoto, deve <strong>ignorar</strong> — está fora do âmbito.</p></div>
+
+<h2>1. Objetivo e visão do produto</h2>
+<p>Construir uma aplicação de suporte técnico remoto onde um cliente leigo consegue, com o mínimo de passos, <strong>partilhar o seu ecrã em direto</strong> com um técnico. O técnico acede a um painel (CRM) protegido por login e vê o(s) ecrã(s) dos clientes em tempo real via WebRTC.</p>
+<ul>
+  <li><strong>Cliente em Computador:</strong> abre um link no navegador (Chrome/Edge), clica <em>COMEÇAR</em> e partilha o ecrã (API <code>getDisplayMedia</code>).</li>
+  <li><strong>Cliente em Android:</strong> instala uma <em>app nativa</em> (APK) que captura o ecrã via <code>MediaProjection</code> e o transmite por WebRTC. O site deteta Android e mostra um botão grande <em>INSTALAR APP</em>.</li>
+  <li><strong>Técnico:</strong> faz login no CRM e vê as sessões ativas (miniaturas ao vivo) e um ecrã ampliado por sessão.</li>
+</ul>
+
+<h2>2. Pilha tecnológica (obrigatória)</h2>
+<table>
+  <tr><th>Camada</th><th>Tecnologia</th><th>Notas</th></tr>
+  <tr><td>Backend</td><td>Python <strong>FastAPI</strong> + <strong>python-socketio</strong> (ASGI)</td><td>Porta 8001. Rotas REST sob <code>/api</code>. Socket.io em <code>/api/socketio</code>.</td></tr>
+  <tr><td>Base de dados</td><td><strong>MongoDB</strong> (motor async, ex.: Motor)</td><td>Coleções <code>sessoes</code> e <code>utilizadores</code>. URL em variável de ambiente <code>MONGO_URL</code>.</td></tr>
+  <tr><td>Frontend cliente/CRM</td><td>HTML/CSS/JS puro</td><td>Servido em <code>frontend/public/</code>. Mobile-first no cliente.</td></tr>
+  <tr><td>Tempo real</td><td>Socket.io (sinalização) + <strong>WebRTC</strong></td><td>STUN Google + (opcional) TURN. 5–15 fps.</td></tr>
+  <tr><td>App Android</td><td><strong>Kotlin</strong>, Gradle, WebRTC (getstream), socket.io-client</td><td>Captura via <code>MediaProjection</code>. minSdk 24, targetSdk 34.</td></tr>
+  <tr><td>Autenticação</td><td><strong>JWT</strong> + <strong>bcrypt</strong></td><td>Apenas para técnicos. Cliente não faz login.</td></tr>
+</table>
+<div class="nota">Todas as URLs, portas e credenciais vêm de variáveis de ambiente. O frontend usa sempre a variável de backend (ex.: <code>REACT_APP_BACKEND_URL</code> ou equivalente) para as chamadas. Nunca colocar segredos no código.</div>
+
+<h2>3. Personas e fluxos de utilizador</h2>
+<h3>3.1 Cliente (Computador — navegador)</h3>
+<ol>
+  <li>Abre <code>/cliente.html?op=&lt;linkId&gt;</code>.</li>
+  <li>Vê um cartão com título e um botão grande <em>COMEÇAR</em>.</li>
+  <li>Ao clicar, o navegador pede autorização (<code>getDisplayMedia</code>); o cliente escolhe o ecrã e confirma.</li>
+  <li>Estado passa a "A partilhar"; o técnico vê o ecrã. Botão <em>Parar partilha</em> disponível.</li>
+</ol>
+<h3>3.2 Cliente (Android — app nativa)</h3>
+<ol>
+  <li>Abre o mesmo link no telemóvel. O site <strong>deteta Android</strong> e mostra <u>apenas</u> um botão grande <em>INSTALAR APP</em> (esconde o COMEÇAR e avisos de partilha web).</li>
+  <li>Instala e abre a app. Toca <em>COMEÇAR</em> (um toque).</li>
+  <li>O Android pede autorização de captura (<code>MediaProjection</code>) — passo obrigatório do sistema. Confirma.</li>
+  <li>A app transmite o ecrã por WebRTC. Mostra notificação persistente enquanto partilha.</li>
+</ol>
+<h3>3.3 Técnico (CRM — desktop)</h3>
+<ol>
+  <li>Abre <code>/tecnico.html</code>, faz login (email + palavra-passe).</li>
+  <li>Vê a lista de sessões do seu operador com <strong>miniaturas ao vivo</strong> das que estão a partilhar.</li>
+  <li>Abre uma sessão para ver o ecrã ampliado. Pode renomear/apagar sessões.</li>
+</ol>
+
+<h2>4. Modelo de dados (MongoDB)</h2>
+<h3>Coleção <code>utilizadores</code></h3>
+<pre>{
+  "email": "tecnico@atlas.pt",     // único
+  "password_hash": "&lt;bcrypt&gt;",
+  "linkId": "1b460f99db",           // id público usado no link ?op=
+  "role": "tecnico"                 // ou "admin" (opcional)
+}</pre>
+<h3>Coleção <code>sessoes</code></h3>
+<pre>{
+  "id": "&lt;uuid&gt;",                  // id interno da sessão
+  "token": "&lt;uuid&gt;",               // token persistente do cliente (reconexão)
+  "operador": "tecnico@atlas.pt",   // dono da sessão
+  "nome": "",                        // rótulo editável pelo técnico
+  "userAgent": "…",
+  "inicio": "ISO-8601",
+  "ultimaAtividade": "ISO-8601",
+  "online": true,                    // socket do cliente ligado
+  "aPartilhar": false,               // a transmitir ecrã?
+  "modo": "ecra",
+  "sid": "&lt;socket-id-do-cliente&gt;"   // null quando offline
+}</pre>
+<div class="nota">Nunca devolver documentos MongoDB em bruto (ObjectId não é serializável). Mapear <code>_id</code>→<code>id</code> e devolver dicts limpos. Datas em ISO com timezone UTC.</div>
+
+<h2>5. API REST (prefixo <code>/api</code>)</h2>
+<table>
+  <tr><th>Método / Rota</th><th>Auth</th><th>Descrição</th></tr>
+  <tr><td><code>POST /api/auth/login</code></td><td>—</td><td>Body <code>{email, password}</code> → <code>{token, role}</code>. Verifica bcrypt.</td></tr>
+  <tr><td><code>GET /api/me</code></td><td>JWT</td><td>Dados do técnico autenticado (email, role, linkId).</td></tr>
+  <tr><td><code>GET /api/app-config</code></td><td>—</td><td>Público. Devolve <code>{op: &lt;linkId do operador principal&gt;}</code>. Usado pela app Android e pelo link do cliente.</td></tr>
+  <tr><td><code>GET /api/ice</code></td><td>—</td><td>Devolve <code>{iceServers:[…]}</code> (STUN Google e, opcional, TURN a partir de variáveis de ambiente).</td></tr>
+  <tr><td><code>GET /api/sessoes</code></td><td>JWT</td><td>Lista as sessões do operador (ordenadas por início desc).</td></tr>
+  <tr><td><code>PATCH /api/sessoes/{id}</code></td><td>JWT</td><td>Renomear sessão (<code>{nome}</code>).</td></tr>
+  <tr><td><code>DELETE /api/sessoes/{id}</code></td><td>JWT</td><td>Apagar sessão.</td></tr>
+</table>
+<p class="small">Autorização: <code>Authorization: Bearer &lt;token&gt;</code>. Token JWT assinado com segredo em variável de ambiente; expiração razoável (ex.: 12h). Palavras-passe guardadas só como hash bcrypt.</p>
+
+<h2>6. Sinalização em tempo real (Socket.io — path <code>/api/socketio</code>)</h2>
+<p>Salas: <code>op:&lt;email&gt;</code> (técnico) e <code>sess:&lt;sessaoId&gt;</code> (par cliente↔técnicos). Estruturas em memória: <code>sid_operador</code>, <code>sid_sessao</code>, <code>sessao_tecnicos</code>.</p>
+<table>
+  <tr><th>Evento</th><th>Origem → Destino</th><th>Descrição</th></tr>
+  <tr><td><code>connect</code> (auth.token)</td><td>Técnico</td><td>Se token válido, entra em <code>op:&lt;email&gt;</code> e recebe a lista de sessões.</td></tr>
+  <tr><td><code>cliente:hello</code> <code>{op, token?, userAgent}</code></td><td>Cliente → Servidor</td><td>Cria/recupera sessão por <code>token</code>. Marca <code>online=true</code>, guarda <code>sid</code>. Responde <code>cliente:sessao {id, token}</code> e atualiza a lista do operador.</td></tr>
+  <tr><td><code>cliente:sessao</code> <code>{id, token}</code></td><td>Servidor → Cliente</td><td>Confirma a sessão; cliente guarda o token para reconexões.</td></tr>
+  <tr><td><code>cliente:partilhar</code> <code>{ativo}</code></td><td>Cliente → Servidor</td><td>Define <code>aPartilhar</code>. Se ativo e há técnico na sala, envia <code>tecnico:pronto</code> ao cliente.</td></tr>
+  <tr><td><code>sessoes:atualizar</code> <code>[…]</code></td><td>Servidor → Técnico</td><td>Lista atualizada das sessões do operador (para o CRM redesenhar).</td></tr>
+  <tr><td><code>tecnico:ver</code> <code>{sessaoId}</code></td><td>Técnico → Servidor</td><td>Entra na sala <code>sess:</code>; se o cliente estiver online, envia-lhe <code>tecnico:pronto</code>.</td></tr>
+  <tr><td><code>tecnico:parar</code> <code>{sessaoId}</code></td><td>Técnico → Servidor</td><td>Sai da sala da sessão.</td></tr>
+  <tr><td><code>tecnico:pronto</code> <code>{}</code></td><td>Servidor → Cliente</td><td>Indica ao cliente que pode criar a oferta WebRTC.</td></tr>
+  <tr><td><code>webrtc:offer</code> <code>{sdp}</code></td><td>Cliente → Técnico</td><td>Reencaminhado para a sala <code>sess:</code> (com <code>sessaoId</code>).</td></tr>
+  <tr><td><code>webrtc:answer</code> <code>{sdp, sessaoId}</code></td><td>Técnico → Cliente</td><td>Reencaminhado ao cliente da sessão.</td></tr>
+  <tr><td><code>webrtc:ice</code> <code>{candidate, sessaoId?}</code></td><td>Ambos</td><td>Troca de candidatos ICE dentro da sala.</td></tr>
+  <tr><td><code>disconnect</code></td><td>—</td><td>Se era o cliente dono da sessão, marca <code>online=false, aPartilhar=false, sid=null</code> e atualiza o operador.</td></tr>
+</table>
+
+<h2>7. Fluxo WebRTC (papéis e passos)</h2>
+<ul>
+  <li><strong>Cliente = offerer</strong> (envia o vídeo do ecrã). <strong>Técnico = answerer</strong> (só recebe — <code>recvonly</code>).</li>
+  <li>Configuração ICE obtida de <code>GET /api/ice</code>. Semântica <code>unified-plan</code>, gathering contínuo.</li>
+  <li>Sequência: técnico entra na sala (<code>tecnico:ver</code>) → servidor envia <code>tecnico:pronto</code> ao cliente → cliente cria <code>offer</code> e envia <code>webrtc:offer</code> → técnico responde <code>webrtc:answer</code> → trocam <code>webrtc:ice</code> → vídeo flui.</li>
+  <li>Fila de ICE: guardar candidatos recebidos antes de <code>setRemoteDescription</code> e aplicá-los depois.</li>
+  <li>Multi-sessão no CRM: uma <code>RTCPeerConnection</code> por sessão (dicionário <code>pcs[sessaoId]</code>); miniaturas ligam-se automaticamente às sessões <code>online &amp;&amp; aPartilhar</code>.</li>
+</ul>
+
+<h2>8. Frontend do CLIENTE (<code>cliente.html</code> + <code>cliente.js</code>)</h2>
+<ul>
+  <li>Lê <code>?op=&lt;linkId&gt;</code>; liga o socket a <code>/api/socketio</code> e emite <code>cliente:hello</code>. Guarda o <code>token</code> em <code>localStorage</code>.</li>
+  <li><strong>Deteção de plataforma:</strong>
+    <ul>
+      <li><code>ehIOS</code> → mostrar aviso "no iPhone/iPad a partilha web não é suportada".</li>
+      <li><code>ehAndroid</code> (e não em PWA standalone) → <u>esconder COMEÇAR</u> e mostrar botão grande <em>INSTALAR APP</em> que descarrega o APK (<code>/atlas-suporte.apk?v=N</code>, com parâmetro de versão para evitar cache).</li>
+      <li>Desktop → mostrar <em>COMEÇAR</em> que chama <code>getDisplayMedia({video:true, audio:false})</code>, tenta baixar frameRate para ~10 fps, e inicia a oferta quando <code>tecnico:pronto</code>.</li>
+    </ul>
+  </li>
+  <li>Wake Lock durante a partilha; re-adquirir ao voltar ao separador.</li>
+  <li>Botão <em>Parar partilha</em>: pára as tracks, fecha a PC, emite <code>cliente:partilhar {ativo:false}</code>.</li>
+  <li>Design mobile-first, tom verde da marca, botões grandes; cada elemento interativo com <code>data-testid</code>.</li>
+</ul>
+<div class="nota"><strong>Cache/atualizações:</strong> se usar Service Worker (PWA), servir os estáticos em modo <em>network-first</em> e versionar o cache, para que as atualizações apareçam após cada deploy.</div>
+
+<h2>9. Frontend do TÉCNICO (<code>tecnico.html</code> + <code>tecnico.js</code>)</h2>
+<ul>
+  <li>Ecrã de login (email/palavra-passe) → guarda o JWT; chama <code>GET /api/me</code> e <code>GET /api/sessoes</code>.</li>
+  <li>Liga o socket com <code>auth:{token}</code>; recebe <code>sessoes:atualizar</code> e redesenha a grelha de cartões.</li>
+  <li>Cada cartão: nome/dispositivo, estado (online / a partilhar), miniatura de vídeo ao vivo, ações (Ver, Renomear, Apagar).</li>
+  <li>Modal "Ver": vídeo ampliado (<code>&lt;video autoplay playsinline&gt;</code>) da sessão selecionada.</li>
+  <li>Liga-se automaticamente por WebRTC às sessões <code>online &amp;&amp; aPartilhar</code> (miniaturas).</li>
+</ul>
+
+<h2>10. App ANDROID nativa (Kotlin)</h2>
+<h3>10.1 Permissões / Manifesto</h3>
+<pre>INTERNET, ACCESS_NETWORK_STATE, WAKE_LOCK,
+FOREGROUND_SERVICE, FOREGROUND_SERVICE_MEDIA_PROJECTION, POST_NOTIFICATIONS
+&lt;service android:foregroundServiceType="mediaProjection" /&gt;</pre>
+<h3>10.2 Componentes</h3>
+<ul>
+  <li><strong>MainActivity</strong>: ecrã simples com botão <em>COMEÇAR</em>. Ao tocar: obtém o operador via <code>GET /api/app-config</code>, pede permissão de notificações (Android 13+) e depois <code>MediaProjectionManager.createScreenCaptureIntent()</code>. Com o resultado, arranca o serviço em primeiro plano.</li>
+  <li><strong>ScreenShareService</strong> (foreground, tipo <code>mediaProjection</code>): mantém a notificação e cria a sessão WebRTC.</li>
+  <li><strong>Sessão WebRTC</strong>: <code>PeerConnectionFactory</code> + <code>ScreenCapturerAndroid(projectionData)</code> a ~15 fps na resolução do ecrã; liga o socket (<code>path=/api/socketio</code>, transporte websocket), emite <code>cliente:hello {op, token?}</code>, ao receber <code>cliente:sessao</code> guarda o token e emite <code>cliente:partilhar {ativo:true}</code>; ao receber <code>tecnico:pronto</code> cria a <code>offer</code> e envia <code>webrtc:offer</code>; aplica <code>webrtc:answer</code> e troca <code>webrtc:ice</code>.</li>
+</ul>
+<h3>10.3 Bibliotecas Gradle</h3>
+<pre>implementation 'io.getstream:stream-webrtc-android:1.3.8'
+implementation 'io.socket:socket.io-client:2.1.0'
+// + androidx core/appcompat/material, viewBinding</pre>
+<h3>10.4 Assinatura / distribuição</h3>
+<ul>
+  <li>Gerar uma <strong>keystore de release</strong> (<code>keytool</code>) e assinar o APK (<code>assembleRelease</code>, esquema v2). Evita o aviso de "app de debug/não confiável" do Play Protect.</li>
+  <li>Servir o APK como ficheiro estático (ex.: <code>/atlas-suporte.apk</code>) para o botão INSTALAR APP.</li>
+  <li>Incrementar <code>versionCode</code>/<code>versionName</code> a cada nova versão (para instalar como atualização) e versionar o link (<code>?v=N</code>) para contornar cache.</li>
+</ul>
+<div class="warn"><strong>Nota Android:</strong> o pedido de autorização de captura (<code>MediaProjection</code>) é <u>obrigatório</u> do sistema e não pode ser suprimido. O objetivo é que o utilizador o confirme com um único toque.</div>
+
+<h2>11. Autenticação e segurança</h2>
+<ul>
+  <li>Login verifica bcrypt; devolve JWT assinado (segredo em variável de ambiente).</li>
+  <li>Semeadura (seeding) idempotente das contas de técnico a partir de configuração; nunca gravar palavras-passe em claro.</li>
+  <li>Dependência FastAPI <code>utilizador_atual</code> valida o Bearer token em todas as rotas protegidas.</li>
+  <li>CORS configurado para a origem do frontend. Socket.io e <code>/api</code> sempre pela rede (nunca em cache).</li>
+</ul>
+
+<h2>12. Critérios de aceitação (Definition of Done)</h2>
+<ol>
+  <li>Um técnico faz login e vê a lista das suas sessões.</li>
+  <li>Num <strong>computador</strong>, o cliente abre o link, clica COMEÇAR, autoriza e o técnico <strong>vê o ecrã em direto</strong> (miniatura + ampliado) com latência baixa.</li>
+  <li>Num <strong>Android</strong>, o link mostra <u>só</u> INSTALAR APP; após instalar e tocar COMEÇAR (+ autorização do sistema), o técnico <strong>vê o ecrã do telemóvel</strong>.</li>
+  <li>Ao parar/fechar, a sessão fica <code>offline</code> e a miniatura deixa de transmitir.</li>
+  <li>O APK está <strong>assinado em release</strong> e instala sem o aviso de "app de debug".</li>
+  <li>Nenhuma funcionalidade de controlo remoto está presente (apenas visualização).</li>
+</ol>
+
+<h2>13. Sugestão de testes</h2>
+<ul>
+  <li><strong>Backend (curl):</strong> login → token; <code>GET /api/sessoes</code> com Bearer; <code>GET /api/app-config</code> e <code>GET /api/ice</code> devolvem JSON válido.</li>
+  <li><strong>Cliente Web (Playwright):</strong> com UA Android → botão INSTALAR APP visível e COMEÇAR escondido; com UA desktop → o inverso.</li>
+  <li><strong>WebRTC:</strong> abrir cliente (desktop) + CRM em dois contextos e confirmar que o vídeo chega ao técnico.</li>
+  <li><strong>Android:</strong> instalar o APK assinado, ligar e confirmar a partilha no CRM (teste em dispositivo real).</li>
+</ul>
+
+<hr/>
+<p class="small">Este prompt descreve um sistema de <strong>partilha de ecrã</strong> (visualização) para Computador (navegador) e Android (app nativa). Mantém o âmbito restrito: sem controlo remoto, sem gestos, sem co-browsing. Segue os contratos de API e eventos de sinalização exatamente como especificado para garantir compatibilidade entre cliente, app e CRM.</p>
+
+</body>
+</html>
