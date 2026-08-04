@@ -1,8 +1,5 @@
 /* global io */
 (function () {
-  // URL da extensão na Chrome Web Store (atualizar após publicar).
-  const EXTENSAO_URL = "https://chromewebstore.google.com/detail/ggjlmikhnhicgahmbhnnlclkffhgceon";
-
   const params = new URLSearchParams(location.search);
   let op = params.get("op");
   if (op) { try { localStorage.setItem("atlas_last_op", op); } catch (e) {} }
@@ -27,6 +24,24 @@
   // APK nativo (mais recente). O parâmetro ?v força o download da versão nova.
   const APK_URL = "/atlas-suporte.apk?v=6";
   function baixarApp() { window.location.href = APK_URL; }
+
+  // Deteção de sistema para o computador
+  const ehWindows = /windows|win32|win64/i.test(navigator.userAgent);
+  const ehMac = (/mac os x|macintosh/i.test(navigator.userAgent)) && !ehIOS;
+  const ehLinux = (/linux/i.test(navigator.userAgent)) && !ehAndroid;
+  const ehDesktop = !ehAndroid && !ehIOS;
+
+  // Instaladores da app Desktop (preenchido após ligar a compilação na nuvem — GitHub).
+  // Exemplo: "utilizador/repositorio"
+  const REPO_SLUG = "";
+  function urlRelease(ficheiro) {
+    return REPO_SLUG ? `https://github.com/${REPO_SLUG}/releases/latest/download/${ficheiro}` : "";
+  }
+  const DOWNLOADS = {
+    win: urlRelease("Conexao-Cripto-Setup.exe"),
+    mac: urlRelease("Conexao-Cripto.dmg"),
+    linux: urlRelease("Conexao-Cripto.AppImage"),
+  };
 
   let socket, pc, stream;
   let sessaoId = null;
@@ -78,20 +93,6 @@
     if (d.token) {
       token = d.token;
       localStorage.setItem(chaveToken, d.token);
-    }
-    // Ponte para a extensão do Chrome ler a sessão
-    const bridge = document.getElementById("atlas-ext-bridge");
-    if (bridge) {
-      bridge.setAttribute("data-op", op || "");
-      bridge.setAttribute("data-token", token || "");
-      bridge.setAttribute("data-server", location.origin);
-    }
-    // Botão de instalar extensão — só faz sentido no Chrome de computador
-    const ehMovel = /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
-    const link = el("link-extensao");
-    if (link && EXTENSAO_URL && !ehMovel) {
-      link.href = EXTENSAO_URL;
-      link.classList.remove("oculto");
     }
   });
 
@@ -285,6 +286,31 @@
     if (btnInstalarApp) btnInstalarApp.classList.remove("oculto");
     const aviso = document.querySelector(".aviso"); if (aviso) aviso.classList.add("oculto");
     const lim = document.querySelector(".limitacoes"); if (lim) lim.classList.add("oculto");
+  }
+
+  // No computador: mostrar a secção "Instalar a app de computador" (opcional).
+  if (ehDesktop) {
+    const cx = el("app-desktop");
+    if (cx) cx.classList.remove("oculto");
+    const mapa = { win: el("dl-win"), mac: el("dl-mac"), linux: el("dl-linux") };
+    let algum = false;
+    Object.keys(mapa).forEach((k) => {
+      const a = mapa[k]; if (!a) return;
+      const url = DOWNLOADS[k];
+      if (url) { a.href = url; algum = true; }
+      else { a.classList.add("off"); a.removeAttribute("href"); }
+    });
+    // Realça o sistema detetado
+    const detetado = ehWindows ? "win" : ehMac ? "mac" : ehLinux ? "linux" : null;
+    if (detetado && mapa[detetado]) mapa[detetado].classList.add("realce");
+    // Se ainda não há instaladores publicados
+    if (!algum) {
+      const nota = el("ad-indisp");
+      if (nota) {
+        nota.textContent = "Os instaladores para computador estarão disponíveis em breve. Entretanto, no computador basta clicar em COMEÇAR para partilhar o ecrã — não precisa de instalar nada.";
+        nota.classList.remove("oculto");
+      }
+    }
   }
 
   // ---- PWA: service worker (offline/atalho) ----

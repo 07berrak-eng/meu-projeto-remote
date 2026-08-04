@@ -410,3 +410,27 @@ input:focus { outline: none; border-color: var(--verde); }
 .encaminhar-lbl { font-size:.78rem; opacity:.75; }
 .sel-encaminhar { flex:1; min-width:150px; padding:8px 10px; border-radius:10px;
   border:1px solid var(--linha); background:#0e161d; color:inherit; font-size:.82rem; cursor:pointer; }
+
+/* ---- Secção "Instalar app de computador" (página do cliente) ---- */
+.caixa-app {
+  margin-top: 14px; background: rgba(255,255,255,.72); border: 1px solid #cfe6c4;
+  border-radius: 16px; padding: 16px 16px 14px; backdrop-filter: blur(6px);
+}
+.ad-titulo { font-weight: 700; color: #14361f; font-size: 15px; }
+.ad-titulo span { font-weight: 500; color: #4f6a58; font-size: 12px; }
+.ad-nota { color: #3d5747; font-size: 12.5px; margin-top: 6px; line-height: 1.45; }
+.ad-botoes { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.ad-btn {
+  flex: 1 1 30%; min-width: 92px; text-align: center; text-decoration: none;
+  background: linear-gradient(180deg,#38bd63,#1f9d55); color: #fff; font-weight: 700;
+  padding: 11px 8px; border-radius: 12px; font-size: 13px;
+  transition: transform .12s ease, box-shadow .2s ease, filter .2s;
+  box-shadow: 0 8px 18px rgba(31,157,85,.28);
+}
+.ad-btn:hover { transform: translateY(-2px); }
+.ad-btn .ad-ic { margin-right: 4px; }
+.ad-btn.realce { outline: 3px solid rgba(31,157,85,.35); outline-offset: 2px; }
+.ad-btn.off { filter: grayscale(1) opacity(.55); cursor: default; box-shadow: none; pointer-events: none; }
+.ad-passos { margin: 12px 0 0 18px; color: #3d5747; font-size: 12.5px; }
+.ad-passos li { margin: 4px 0; }
+.ad-indisp { margin-top: 10px; font-size: 12px; color: #7a5a12; background: #fff6e2; border: 1px solid #f2dfa8; border-radius: 10px; padding: 9px 11px; }

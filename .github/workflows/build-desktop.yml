@@ -1,0 +1,80 @@
+name: Build Desktop (Conexão Cripto)
+
+# Compila os instaladores da app Desktop para Windows, macOS e Linux
+# e publica-os numa Release do GitHub (tag "desktop-latest").
+# Assim os links de download do site ficam sempre atualizados.
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "desktop-app/**"
+      - ".github/workflows/build-desktop.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            plataforma: win
+          - os: macos-latest
+            plataforma: mac
+          - os: ubuntu-latest
+            plataforma: linux
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: desktop-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependências do Linux (nut.js)
+        if: matrix.plataforma == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y libxtst-dev libpng++-dev libx11-dev
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Compilar instalador
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npm run dist:${{ matrix.plataforma }}
+
+      - name: Recolher instaladores
+        uses: actions/upload-artifact@v4
+        with:
+          name: instalador-${{ matrix.plataforma }}
+          path: |
+            desktop-app/dist/*.exe
+            desktop-app/dist/*.dmg
+            desktop-app/dist/*.AppImage
+
+  publicar:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descarregar artefactos
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Publicar Release (desktop-latest)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: desktop-latest
+          name: Conexão Cripto — App Desktop (última versão)
+          files: dist/**/*
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

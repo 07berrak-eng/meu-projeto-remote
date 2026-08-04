@@ -148,3 +148,12 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - APK v1.4 (versionCode 5) assinado (v2 OK), label "Conexão Cripto", ícone novo confirmado (res/9w.png). Link ?v=6. sw.js CACHE=atlas-pwa-v4.
 - Desktop fonte: /app/frontend/public/Conexao-Cripto-Desktop-Fonte.zip (antigo Atlas-Desktop-Fonte.zip removido).
 - Verificado por screenshots (cliente + login técnico mostram novo logo/nome) e inspeção do APK. Runtime nativo (Android/Desktop) não testável no pod.
+
+## Instalação mais fácil: "extensão"→"INSTALAR APP" + builds na nuvem (2026-06-XX f)
+- Removida a opção "Instalar extensão" (Chrome Web Store) do cliente.html/cliente.js (EXTENSAO_URL, link-extensao, bridge da extensão).
+- Cliente no COMPUTADOR: COMEÇAR (partilha no navegador, zero instalação) continua principal; nova secção "Instalar a app de computador (opcional)" com deteção de SO (Windows/macOS/Linux), realce do SO detetado, 3 passos, e nota quando instaladores ainda não publicados. Android mantém só INSTALAR APP.
+- cliente.js: ehWindows/ehMac/ehLinux/ehDesktop; DOWNLOADS via `REPO_SLUG` (vazio por agora) → `https://github.com/<slug>/releases/latest/download/<ficheiro>`. Quando REPO_SLUG for preenchido (após ligar GitHub), os botões ativam.
+- desktop-app/package.json: artifactName fixos → Conexao-Cripto-Setup.exe / Conexao-Cripto.dmg / Conexao-Cripto.AppImage.
+- GitHub Actions: /app/.github/workflows/build-desktop.yml compila win/mac/linux e publica Release tag `desktop-latest`. ATIVAR via "Save to GitHub"; depois o utilizador envia o link do repo p/ eu definir REPO_SLUG.
+- Verificado por screenshot (desktop): COMEÇAR primário + secção app com botões e nota; extensão removida. cliente.js sintaxe OK.
+- PENDENTE do utilizador: (1) Save to GitHub para correr a fábrica de builds; (2) enviar link do repo para ativar os botões de download.

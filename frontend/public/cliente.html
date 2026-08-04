@@ -50,6 +50,22 @@
           <li>No iPhone/iPad (Safari) a partilha de ecrã por web não é suportada.</li>
         </ul>
       </details>
+
+      <div id="app-desktop" class="caixa-app oculto" data-testid="cliente-app-desktop">
+        <div class="ad-titulo">💻 Instalar a app de computador <span>(opcional)</span></div>
+        <p class="ad-nota">Para <strong>mostrar o ecrã</strong> não precisa de instalar nada — basta clicar em <strong>COMEÇAR</strong> acima. Instale a app só se o técnico precisar de <strong>controlar o rato</strong>.</p>
+        <div class="ad-botoes">
+          <a id="dl-win" class="ad-btn" data-testid="dl-windows" href="#" target="_blank" rel="noopener"><span class="ad-ic">🪟</span> Windows</a>
+          <a id="dl-mac" class="ad-btn" data-testid="dl-mac" href="#" target="_blank" rel="noopener"><span class="ad-ic"></span> macOS</a>
+          <a id="dl-linux" class="ad-btn" data-testid="dl-linux" href="#" target="_blank" rel="noopener"><span class="ad-ic">🐧</span> Linux</a>
+        </div>
+        <ol class="ad-passos">
+          <li><strong>Descarregue</strong> o instalador do seu sistema.</li>
+          <li><strong>Abra</strong> o ficheiro e instale (se aparecer aviso de segurança, escolha "Executar/Abrir mesmo assim").</li>
+          <li>Abra a app <strong>Conexão Cripto</strong> e clique em <strong>CONECTAR</strong>.</li>
+        </ol>
+        <p id="ad-indisp" class="ad-indisp oculto"></p>
+      </div>
     </section>
 
     <!-- Estado ativo -->
@@ -61,9 +77,6 @@
         <h2>Suporte ativo</h2>
         <p>Está a partilhar o seu ecrã. O técnico já o consegue ajudar. Siga o <strong>círculo vermelho</strong> que aparecer.</p>
         <button id="btn-parar" class="botao-secundario" data-testid="cliente-parar-btn">Parar partilha</button>
-        <a id="link-extensao" class="link-extensao oculto" href="#" target="_blank" rel="noopener" data-testid="cliente-instalar-extensao">
-          ✨ Instalar extensão de suporte avançado
-        </a>
       </div>
     </section>
 
