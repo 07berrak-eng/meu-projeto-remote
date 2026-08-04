@@ -24,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Suporte Atlas"
+            android:text="Conexão Cripto"
             android:textColor="@color/text_dark"
             android:textSize="26sp"
             android:textStyle="bold" />

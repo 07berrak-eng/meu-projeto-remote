@@ -1,7 +1,7 @@
 {
-  "name": "Suporte Atlas",
-  "short_name": "Atlas",
-  "description": "Receba ajuda técnica em direto: partilhe o seu ecrã com o técnico Atlas.",
+  "name": "Conexão Cripto",
+  "short_name": "Conexão Cripto",
+  "description": "Receba ajuda técnica em direto: partilhe o seu ecrã com o técnico da Conexão Cripto.",
   "start_url": "/cliente.html",
   "scope": "/",
   "display": "standalone",

@@ -20,7 +20,7 @@ function createWindow() {
     height: 660,
     resizable: false,
     backgroundColor: "#0f1720",
-    title: "Suporte Atlas",
+    title: "Conexão Cripto",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,

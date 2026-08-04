@@ -25,7 +25,7 @@
     || window.navigator.standalone === true;
 
   // APK nativo (mais recente). O parâmetro ?v força o download da versão nova.
-  const APK_URL = "/atlas-suporte.apk?v=5";
+  const APK_URL = "/atlas-suporte.apk?v=6";
   function baixarApp() { window.location.href = APK_URL; }
 
   let socket, pc, stream;
@@ -279,8 +279,8 @@
 
   // Em Android (fora da PWA instalada): destacar apenas o botão INSTALAR APP.
   if (ehAndroid && !emStandalonePWA) {
-    const t = el("inicio-titulo"); if (t) t.innerHTML = "Suporte em direto<br/>com a app Atlas";
-    const p = el("inicio-texto"); if (p) p.textContent = "Instale a aplicação Atlas para o técnico ver o seu ecrã e o ajudar a resolver o problema, com toques guiados em direto.";
+    const t = el("inicio-titulo"); if (t) t.innerHTML = "Suporte em direto<br/>com a app Conexão Cripto";
+    const p = el("inicio-texto"); if (p) p.textContent = "Instale a aplicação Conexão Cripto para o técnico ver o seu ecrã e o ajudar a resolver o problema, com toques guiados em direto.";
     const bc = el("btn-comecar"); if (bc) bc.classList.add("oculto");
     if (btnInstalarApp) btnInstalarApp.classList.remove("oculto");
     const aviso = document.querySelector(".aviso"); if (aviso) aviso.classList.add("oculto");

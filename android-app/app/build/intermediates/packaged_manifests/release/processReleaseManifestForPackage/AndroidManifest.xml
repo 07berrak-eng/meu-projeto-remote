@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="pt.atlas.suporte"
-    android:versionCode="4"
-    android:versionName="1.3" >
+    android:versionCode="5"
+    android:versionName="1.4" >
 
     <uses-sdk
         android:minSdkVersion="24"
@@ -56,7 +56,7 @@
         <service
             android:name="pt.atlas.suporte.ControlService"
             android:exported="false"
-            android:label="Suporte Atlas — Controlo remoto"
+            android:label="Conexão Cripto — Controlo remoto"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE" >
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />

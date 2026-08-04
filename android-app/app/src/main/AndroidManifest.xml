@@ -44,7 +44,7 @@
         <service
             android:name=".ControlService"
             android:exported="false"
-            android:label="Suporte Atlas — Controlo remoto"
+            android:label="Conexão Cripto — Controlo remoto"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />

@@ -22,11 +22,12 @@
   },
   "build": {
     "appId": "pt.atlas.suporte.desktop",
-    "productName": "Suporte Atlas",
+    "productName": "Conexão Cripto",
+    "directories": { "buildResources": "assets" },
     "files": ["main.js", "preload.js", "renderer/**/*", "assets/**/*"],
     "asarUnpack": ["**/@nut-tree-fork/**", "**/node_modules/@nut-tree-fork/**"],
-    "win": { "target": ["nsis"], "artifactName": "Suporte-Atlas-Setup-${version}.${ext}" },
-    "mac": { "target": ["dmg"], "category": "public.app-category.utilities" },
-    "linux": { "target": ["AppImage"], "category": "Utility" }
+    "win": { "target": ["nsis"], "icon": "assets/icon.png", "artifactName": "Conexao-Cripto-Setup-${version}.${ext}" },
+    "mac": { "target": ["dmg"], "icon": "assets/icon.png", "category": "public.app-category.utilities" },
+    "linux": { "target": ["AppImage"], "icon": "assets/icon.png", "category": "Utility" }
   }
 }

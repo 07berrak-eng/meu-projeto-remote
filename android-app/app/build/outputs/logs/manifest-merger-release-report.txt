@@ -165,7 +165,7 @@ ADDED from /app/android-app/app/src/main/AndroidManifest.xml:37:9-41:56
 service#pt.atlas.suporte.ControlService
 ADDED from /app/android-app/app/src/main/AndroidManifest.xml:44:9-55:19
 	android:label
-		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:47:13-60
+		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:47:13-61
 	android:exported
 		ADDED from /app/android-app/app/src/main/AndroidManifest.xml:46:13-37
 	android:permission

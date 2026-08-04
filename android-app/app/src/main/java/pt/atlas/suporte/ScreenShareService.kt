@@ -58,7 +58,7 @@ class ScreenShareService : Service() {
             nm.createNotificationChannel(canal)
         }
         val notif: Notification = NotificationCompat.Builder(this, CANAL)
-            .setContentTitle("Suporte Atlas")
+            .setContentTitle("Conexão Cripto")
             .setContentText("A partilhar o seu ecrã com o técnico.")
             .setSmallIcon(android.R.drawable.ic_menu_share)
             .setOngoing(true)

@@ -72,7 +72,7 @@ class SignalingService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val notif: Notification = NotificationCompat.Builder(this, CANAL)
-            .setContentTitle("Suporte Atlas — ligado")
+            .setContentTitle("Conexão Cripto — ligado")
             .setContentText("Está ligado ao suporte. O técnico pode reconectar quando precisar.")
             .setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
             .setContentIntent(abrir)

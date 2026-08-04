@@ -1,4 +1,4 @@
-# Suporte Atlas — App Desktop (Electron)
+# Conexão Cripto — App Desktop (Electron)
 
 App de desktop para **partilha de ecrã + controlo remoto** com reconexão automática.
 Liga-se automaticamente à conta principal (admin), tal como a app Android.

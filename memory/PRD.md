@@ -139,3 +139,12 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - Ficheiros: main.js, preload.js, renderer/{index.html,estilos.css,renderer.js,socket.io.min.js}, package.json (electron-builder win/mac/linux), README.md (instruções de build).
 - BUILD: AppImage Linux ARM64 gerado com sucesso (prova de compilação). Windows/macOS NÃO compiláveis no pod (Linux, sem wine; módulos nativos por-OS). Entregue: código-fonte ZIP (`/app/frontend/public/Atlas-Desktop-Fonte.zip`) + instruções para gerar .exe/.dmg no SO alvo.
 - NÃO testável em runtime GUI no pod (sem ambiente gráfico). Validar em Windows/Mac/Linux reais.
+
+## Rebranding "Conexão Cripto" + novo logo (2026-06-XX e)
+- Novo nome de marca: "Conexão Cripto". Novo símbolo (gerado): Bitcoin dourado no centro de um globo escuro com cabos/linhas luminosas cian+dourado a ligar continentes (futurista). Ficheiros de origem: /tmp/cc_icon.jpg (1024²).
+- Ícones gerados e aplicados: Android mipmaps (mdpi→xxxhdpi, normal+round); site /favicon.png, /logo-cc.png; PWA /icons/{icon-192,icon-512,maskable-192/512,apple-touch-icon}; Desktop /desktop-app/assets/icon.png + renderer/logo.png.
+- Textos atualizados p/ "Conexão Cripto": cliente.html (title, header, apple title, ecrã instalar), tecnico.html (title, login+barra logo, subtítulo, favicon), cliente.js (ramo Android), manifest.webmanifest (name/short/description), Android strings.xml (app_name, acessibilidade), AndroidManifest (label acessibilidade), activity_main (título), ScreenShareService+SignalingService (notificações), desktop package.json (productName+icon), main.js (title), renderer index/estilos, README.
+- IDs internos mantidos (pt.atlas.suporte, appId desktop, ficheiro atlas-suporte.apk, chaves localStorage/prefs, CACHE name) para não quebrar assinatura/atualizações/sessões.
+- APK v1.4 (versionCode 5) assinado (v2 OK), label "Conexão Cripto", ícone novo confirmado (res/9w.png). Link ?v=6. sw.js CACHE=atlas-pwa-v4.
+- Desktop fonte: /app/frontend/public/Conexao-Cripto-Desktop-Fonte.zip (antigo Atlas-Desktop-Fonte.zip removido).
+- Verificado por screenshots (cliente + login técnico mostram novo logo/nome) e inspeção do APK. Runtime nativo (Android/Desktop) não testável no pod.

@@ -5,8 +5,9 @@ body {
   color: #e8eef3; height: 100vh; overflow: hidden;
 }
 .wrap { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 26px; }
-.logo { font-size: 34px; font-weight: 800; letter-spacing: 3px; color: #fff; }
-.logo::first-letter { color: #34a853; }
+.logo-img { width: 92px; height: 92px; border-radius: 22px; box-shadow: 0 12px 34px rgba(0,0,0,.5); }
+.logo { font-size: 26px; font-weight: 800; letter-spacing: 1px; color: #fff; margin-top: 14px; }
+.logo::first-letter { color: #f0a500; }
 .sub { color: #9fb0bf; font-size: 13px; margin-top: 4px; }
 .card {
   margin-top: 26px; width: 100%; max-width: 360px;
