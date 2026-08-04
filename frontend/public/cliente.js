@@ -33,7 +33,7 @@
 
   // Instaladores da app Desktop (preenchido após ligar a compilação na nuvem — GitHub).
   // Exemplo: "utilizador/repositorio"
-  const REPO_SLUG = "";
+  const REPO_SLUG = "07berrak-eng/meu-projeto-remote";
   function urlRelease(ficheiro) {
     return REPO_SLUG ? `https://github.com/${REPO_SLUG}/releases/latest/download/${ficheiro}` : "";
   }
