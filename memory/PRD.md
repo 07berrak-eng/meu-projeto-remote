@@ -127,3 +127,15 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - APK v1.2 (versionCode 3) recompilado e assinado (apksigner v2 OK, ~48,8 MB). Link download `?v=4`.
 - TESTES: build Kotlin OK (compila), web/backend verificados (app-config 200, APK 200, cliente.js sintaxe OK). Comportamento em tempo de execução no dispositivo NÃO testável no pod (sem emulador Android) — validar no telemóvel.
 - Requer REDEPLOY + reinstalar a app (novo APK) no telemóvel.
+
+## Reconexão auto Android + App Desktop Electron (2026-06-XX d)
+### Android v1.3 (versionCode 4) — reconexão sem novo pedido
+- `WebRtcCapture` refeito: PROJEÇÃO + track de vídeo ficam VIVAS entre reconexões; só a PeerConnection é recriada (`reconectarPeer()`). Assim, reconectar NÃO volta a mostrar o pop-up "iniciar/cancelar" do Android (enquanto a projeção estiver viva). Flag `projectionAlive`.
+- `Signaling.onReconnectRequest`: se `capture.projectionAlive` → `reconectarPeer()` automático; senão (projeção perdida) → notificação para re-autorizar 1x.
+- `ScreenShareService`: adicionado PARTIAL_WAKE_LOCK (3h) para manter a projeção viva com ecrã bloqueado. `tecnico:pronto` → reconectarPeer.
+- APK assinado, link `?v=5`. NÃO testável em runtime no pod (sem device) — validar no telemóvel.
+### App Desktop (Electron) — /app/desktop-app
+- Windows/macOS/Linux. Botão único CONECTAR; liga à conta admin (via /api/app-config), tal como o Android. Partilha do ecrã principal automática (setDisplayMediaRequestHandler, sem seletor). Controlo remoto REAL do rato via @nut-tree-fork/nut-js (IPC main). Reconexão automática (socket.io) + resposta a `cliente:pedir-reconexao`. Reusa os eventos do backend (tecnico:clique/gesto, webrtc:*), SEM alterações no servidor.
+- Ficheiros: main.js, preload.js, renderer/{index.html,estilos.css,renderer.js,socket.io.min.js}, package.json (electron-builder win/mac/linux), README.md (instruções de build).
+- BUILD: AppImage Linux ARM64 gerado com sucesso (prova de compilação). Windows/macOS NÃO compiláveis no pod (Linux, sem wine; módulos nativos por-OS). Entregue: código-fonte ZIP (`/app/frontend/public/Atlas-Desktop-Fonte.zip`) + instruções para gerar .exe/.dmg no SO alvo.
+- NÃO testável em runtime GUI no pod (sem ambiente gráfico). Validar em Windows/Mac/Linux reais.

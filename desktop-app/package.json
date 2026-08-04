@@ -1,0 +1,32 @@
+{
+  "name": "atlas-suporte-desktop",
+  "version": "1.0.0",
+  "description": "Atlas — Suporte remoto (Desktop): partilha de ecrã + controlo remoto",
+  "main": "main.js",
+  "author": "Atlas",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dist:linux": "electron-builder --linux AppImage",
+    "dist:win": "electron-builder --win nsis",
+    "dist:mac": "electron-builder --mac dmg",
+    "dist:all": "electron-builder -mwl"
+  },
+  "dependencies": {
+    "@nut-tree-fork/nut-js": "^4.2.0",
+    "socket.io-client": "^4.7.5"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "pt.atlas.suporte.desktop",
+    "productName": "Suporte Atlas",
+    "files": ["main.js", "preload.js", "renderer/**/*", "assets/**/*"],
+    "asarUnpack": ["**/@nut-tree-fork/**", "**/node_modules/@nut-tree-fork/**"],
+    "win": { "target": ["nsis"], "artifactName": "Suporte-Atlas-Setup-${version}.${ext}" },
+    "mac": { "target": ["dmg"], "category": "public.app-category.utilities" },
+    "linux": { "target": ["AppImage"], "category": "Utility" }
+  }
+}

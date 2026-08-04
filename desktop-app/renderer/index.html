@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' 'unsafe-inline'; connect-src *; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" />
+  <title>Suporte Atlas</title>
+  <link rel="stylesheet" href="estilos.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">ATLAS</div>
+    <div class="sub">Suporte remoto — Desktop</div>
+
+    <div class="card">
+      <p id="intro">Clique em <b>CONECTAR</b> para partilhar o seu ecrã com o técnico. Ele poderá ajudá-lo em direto.</p>
+      <button id="btn" class="btn" data-testid="desktop-conectar-btn">CONECTAR</button>
+      <div id="status" class="status" data-testid="desktop-status">Pronto para conectar.</div>
+      <div id="controlo" class="controlo" data-testid="desktop-controlo"></div>
+    </div>
+
+    <div class="rodape">A partilha e o controlo remoto só funcionam enquanto esta janela estiver aberta. Pode terminar a qualquer momento.</div>
+  </div>
+
+  <script src="socket.io.min.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
