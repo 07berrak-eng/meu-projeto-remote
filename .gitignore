@@ -81,3 +81,9 @@ memory/test_credentials.md
 # Mobile development
 android-sdk/desktop-app/node_modules/electron/dist/electron
 desktop-app/node_modules/electron/dist/electron
+.env
+.env.*
+*.env
+credentials.json
+*.key
+.credentials
