@@ -23,6 +23,7 @@
   "build": {
     "appId": "pt.atlas.suporte.desktop",
     "productName": "Conexão Cripto",
+    "publish": null,
     "directories": { "buildResources": "assets" },
     "files": ["main.js", "preload.js", "renderer/**/*", "assets/**/*"],
     "asarUnpack": ["**/@nut-tree-fork/**", "**/node_modules/@nut-tree-fork/**"],

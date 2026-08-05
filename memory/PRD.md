@@ -157,3 +157,9 @@ Sistema web de suporte técnico remoto multi-operador. Cliente abre link, toca C
 - GitHub Actions: /app/.github/workflows/build-desktop.yml compila win/mac/linux e publica Release tag `desktop-latest`. ATIVAR via "Save to GitHub"; depois o utilizador envia o link do repo p/ eu definir REPO_SLUG.
 - Verificado por screenshot (desktop): COMEÇAR primário + secção app com botões e nota; extensão removida. cliente.js sintaxe OK.
 - PENDENTE do utilizador: (1) Save to GitHub para correr a fábrica de builds; (2) enviar link do repo para ativar os botões de download.
+
+## Fix build Desktop CI (2026-06-XX g)
+- Repo do utilizador: github.com/07berrak-eng/meu-projeto-remote (público). Workflow correu (#2, manual) mas os 3 jobs falharam em `electron-builder` no afterPack → getAppUpdatePublishConfiguration.
+- CAUSA: GH_TOKEN presente no passo de compilação fez o electron-builder tentar auto-publish/auto-update sem config `publish` → erro.
+- FIX: desktop-app/package.json build `"publish": null`; removido `GH_TOKEN` do passo "Compilar instalador" no workflow (fica só no job "publicar" via softprops/action-gh-release). REPO_SLUG já definido em cliente.js.
+- AÇÃO do utilizador: "Save to GitHub" de novo (envia o fix) → workflow re-corre → Release desktop-latest com Conexao-Cripto-Setup.exe/.dmg/.AppImage → botões de download ativam.
